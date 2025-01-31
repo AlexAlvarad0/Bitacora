@@ -1,12 +1,8 @@
-from django.urls import path, include
-from rest_framework.routers import DefaultRouter
-from .views import MensajeViewSet  # Importa la vista correcta
+from django.urls import path
+from .views import LoginView
+from .views import LoginView, FormularioView
 
-# Configura el router para la API
-router = DefaultRouter()
-router.register(r'mensajes', MensajeViewSet)  # Registra la vista de MensajeViewSet
-
-# Define las URL patterns
 urlpatterns = [
-    path('', include(router.urls)),  # Incluye las URLs generadas por el router
+    path('login/', LoginView.as_view(), name='login'),
+    path('formulario/', FormularioView.as_view(), name='formulario'),
 ]

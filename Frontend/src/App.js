@@ -1,15 +1,17 @@
 import React from 'react';
-import MensajeList from './components/MensajeList';
-import CrearMensaje from './components/CrearMensaje';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import Login from './pages/Login';
+import Formulario from './components/Formulario';
 
-function App() {
+const App = () => {
     return (
-        <div>
-            <h1>Registro de Bitácora</h1>
-            <CrearMensaje />
-            <MensajeList />
-        </div>
+        <Router>
+            <Routes>
+                <Route path="/" element={<Login />} />
+                <Route path="/formulario" element={<Formulario />} />
+            </Routes>
+        </Router>
     );
-}
+};
 
 export default App;
