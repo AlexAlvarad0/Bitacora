@@ -63,13 +63,16 @@ class FormularioView(APIView):
             # Leer el archivo Excel
             df_existente = pd.read_excel(file_content)
 
+            # Obtener el nombre completo del usuario autenticado
+            user = request.user
+            full_name = f"{user.first_name} {user.last_name}"
             # Crear un nuevo registro
             nuevo_registro = pd.DataFrame([{
                 "Fecha y Hora": datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
                 "Tipo Notificación": data.get('tipo_notificacion'),
                 "Sentido": data.get('sentido'),
                 "Canal de Comunicación": data.get('canal_comunicacion'),
-                "Emisor": data.get('emisor'),
+                "Emisor": full_name,
                 "Área": data.get('area'),
                 "Unidad": data.get('unidad'),
                 "Indicador": data.get('indicador'),

@@ -1,95 +1,191 @@
+
+/* Login.css */
 body {
     margin: 0;
     font-family: Arial, sans-serif;
-    background-color: #005fb3;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    background-color: #f5f7fa;
+        align-items: center;
     height: 100vh;
 }
 
 .login-container {
-    background-color: #fff;
-    padding: 40px 50px;
-    border-radius: 20px;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 800px;
-    text-align: left;
-}
-
-.login-container h1 {
-    margin-bottom: 30px;
-    font-size: 24px;
-    color: #005fb3;
-}
-
-.row {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.login-card {
+    display: flex;
+    background-color: white;
+    border-radius: 15px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 900px;
+    overflow: hidden;
+}
+
+.login-form {
+    flex: 1;
+    padding: 40px;
+}
+
+.welcome-side {
+    flex: 1;
+    background: linear-gradient(135deg, #2563eb, #1e40af);
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    text-align: center;
+}
+
+.title-section {
+    margin-bottom: 30px;
+}
+
+.title-section h1 {
+    font-size: 24px;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.social-icons {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.social-icon {
+    width: 35px;
+    height: 35px;
+    border: 1px solid #e5e7eb;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.social-icon:hover {
+    background-color: #f3f4f6;
+}
+
+.input-group {
     margin-bottom: 20px;
 }
 
-.col {
-    flex: 1;
-    margin-right: 20px;
-}
-
-.col:last-child {
-    margin-right: 0;
-}
-
-label {
+.input-group label {
     display: block;
-    margin-bottom: 5px;
-    color: #333;
-    font-weight: bold;
+    font-size: 12px;
+    color: #6b7280;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    font-weight: 600;
 }
 
-.pills {
+.input-group input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background-color: #f9fafb;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.input-group input:focus {
+    outline: none;
+    border-color: #2563eb;
+    background-color: white;
+}
+
+.login-button {
+    width: 100%;
+    padding: 12px;
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.login-button:hover {
+    background-color: #1e40af;
+}
+
+.options-row {
     display: flex;
-    justify-content: flex-start;
-    flex-wrap: wrap;
-    gap: 10px;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
 }
 
-.pills button {
-    background-color: #f1f1f1;
-    border: none;
-    border-radius: 8px;
-    padding: 8px 16px;
-    font-size: 16px;
+.remember-me {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.remember-me input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
     cursor: pointer;
 }
 
-.pills button.active {
-    background-color: #005fb3;
+.forgot-password {
+    color: #2563eb;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.forgot-password:hover {
+    text-decoration: underline;
+}
+
+.welcome-side h2 {
+    font-size: 28px;
+    margin-bottom: 15px;
+}
+
+.welcome-side p {
+    margin-bottom: 25px;
+    opacity: 0.9;
+}
+
+.signup-button {
+    padding: 10px 30px;
+    border: 2px solid white;
+    border-radius: 25px;
     color: white;
-}
-
-select, input, textarea {
-    width: 100%;
-    padding: 12px 16px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    font-size: 16px;
-}
-
-textarea {
-    height: 100px;
-}
-
-.btn {
-    width: 100%;
-    padding: 12px 16px;
-    background-color: #005fb3;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
+    background: transparent;
+    font-size: 14px;
     cursor: pointer;
+    transition: all 0.3s ease;
 }
 
-.btn:hover {
-    background-color: #004a8c;
+.signup-button:hover {
+    background-color: white;
+    color: #2563eb;
+}
+
+@media (max-width: 768px) {
+    .login-card {
+        flex-direction: column;
+    }
+    
+    .login-form,
+    .welcome-side {
+        width: 100%;
+    }
+    
+    .welcome-side {
+        padding: 30px;
+    }
 }

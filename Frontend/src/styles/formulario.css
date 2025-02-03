@@ -1,0 +1,147 @@
+/* Formulario.css */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f5f7fa;
+}
+
+.form-container {
+    padding: 30px;
+    margin: 20px auto;
+    max-width: 1200px;
+    background-color: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilos para el título del formulario */
+.form-container h5 {
+    color: #1976d2;
+    margin-bottom: 30px;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+/* Estilos para las secciones de radio buttons */
+.MuiFormControl-root .MuiFormLabel-root {
+    color: #1976d2;
+    font-weight: 500;
+}
+
+.MuiRadio-root.Mui-checked {
+    color: #1976d2;
+}
+
+/* Estilos para los campos de selección */
+.MuiSelect-root {
+    background-color: #fff;
+}
+
+.MuiSelect-root:hover {
+    background-color: #f8f9fa;
+}
+
+.MuiSelect-root.Mui-focused {
+    background-color: #fff;
+}
+
+/* Estilos para los campos de texto */
+.MuiTextField-root {
+    background-color: #fff;
+}
+
+.MuiTextField-root .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+    border-color: #1976d2;
+}
+
+.MuiTextField-root .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+    border-color: #1976d2;
+}
+
+/* Estilos para las etiquetas de los campos */
+.MuiInputLabel-root {
+    color: #666;
+}
+
+.MuiInputLabel-root.Mui-focused {
+    color: #1976d2;
+}
+
+/* Estilos para el área de observaciones */
+.MuiTextField-root[rows="3"] {
+    background-color: #fff;
+}
+
+/* Estilos para el botón de guardar */
+.MuiButton-containedPrimary {
+    background-color: #1976d2;
+    padding: 10px 30px;
+    font-size: 16px;
+    text-transform: none;
+    margin-top: 20px;
+}
+
+.MuiButton-containedPrimary:hover {
+    background-color: #1565c0;
+}
+
+/* Estilos para las subtítulos */
+.MuiTypography-subtitle1 {
+    color: #333;
+    font-weight: 500;
+    margin-bottom: 10px;
+}
+
+/* Estilos para los grupos de radio buttons */
+.MuiFormGroup-root {
+    margin-bottom: 10px;
+}
+
+/* Estilos para los elementos del grid */
+.MuiGrid-item {
+    padding: 16px;
+}
+
+/* Estilos para el contenedor del formulario */
+form {
+    padding: 20px;
+}
+
+/* Responsive styles */
+@media (max-width: 600px) {
+    .form-container {
+        padding: 15px;
+        margin: 10px;
+    }
+
+    .MuiGrid-item {
+        padding: 8px;
+    }
+
+    .form-container h5 {
+        font-size: 20px;
+    }
+}
+
+/* Estilos para los mensajes de error */
+.MuiFormHelperText-root.Mui-error {
+    color: #d32f2f;
+    margin-top: 4px;
+}
+
+/* Estilos para los campos deshabilitados */
+.Mui-disabled {
+    background-color: #f5f5f5;
+    cursor: not-allowed;
+}
+
+/* Estilos para mejorar la legibilidad de los campos de selección */
+.MuiSelect-select {
+    padding: 12px 14px;
+}
+
+/* Estilos para el spacing entre elementos */
+.MuiGrid-container {
+    margin-top: -8px;
+    margin-bottom: -8px;
+}
