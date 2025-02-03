@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import './Login.css';
+import logo from '../images/ORIGINAL SECUNDARIO-01.png';
 
 const Login = () => {
   const [username, setUsername] = useState('');
@@ -24,54 +25,42 @@ const Login = () => {
       <div className="login-card">
         <div className="login-form">
           <div className="title-section">
-            <h1>Sign In</h1>
-            <div className="social-icons">
-              <div className="social-icon">
-                <i className="fab fa-facebook-f"></i>
-              </div>
-              <div className="social-icon">
-                <i className="fab fa-twitter"></i>
-              </div>
-            </div>
+            <h1>Inicio de Sesión</h1>
+            
           </div>
           
           <div className="input-group">
-            <label>USERNAME</label>
+            <label>NOMBRE DE USUARIO</label>
             <input
               type="text"
-              placeholder="Username"
+              placeholder="Nombre de usuario"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
             />
           </div>
           
           <div className="input-group">
-            <label>PASSWORD</label>
+            <label>CONTRASEÑA</label>
             <input
               type="password"
-              placeholder="Password"
+              placeholder="Contraseña"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
           
           <button className="login-button" onClick={handleLogin}>
-            Sign In
+            Iniciar Sesión
           </button>
-          
-          <div className="options-row">
-            <label className="remember-me">
-              <input type="checkbox" />
-              <span>Remember Me</span>
-            </label>
-            <a href="#" className="forgot-password">Forgot Password</a>
-          </div>
+
         </div>
         
         <div className="welcome-side">
-          <h2>Welcome to login</h2>
-          <p>Don't have an account?</p>
-          <button className="signup-button">Sign Up</button>
+          <h2>Registro de Bitácora TC</h2>
+          <img 
+          src={logo} 
+          alt='Logo' 
+          style={{ width: '15vw', height: 'auto' }} />
         </div>
       </div>
     </div>

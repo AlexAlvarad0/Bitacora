@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect} from 'react';
 import '../styles/formulario.css';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -15,10 +15,15 @@ import {
   RadioGroup,
   FormControlLabel,
   Radio,
+  Alert,
 } from '@mui/material';
 import {SyncLoader} from 'react-spinners';
+import { Autocomplete } from '@mui/material';
+import Header from './Header';
+import CheckIcon from '@mui/icons-material/Check';
 
 const Formulario = () => {
+  const [skuOptions, setSkuOptions] = useState([]);
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     tipo_notificacion: '',
@@ -36,43 +41,127 @@ const Formulario = () => {
     receptor: '',
     observaciones: '',
   });
+  const [isLoading, setIsLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  useEffect(() => {
+    const loadSkuData = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          console.error('No estás autenticado.');
+          return;
+        }
+        const response = await fetch('http://127.0.0.1:8000/api/sku/', {
+          method: 'GET',
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!response.ok) {
+          throw new Error(`Error al cargar SKU: ${response.status}`);
+        }
+        const data = await response.json();
+        setSkuOptions(data.skuOptions);
+      } catch (error) {
+        console.error('Error cargando SKU:', error);
+      }
+    };
+    loadSkuData();
+  }, []);
 
-  const [isLoading, setIsLoading] = useState(false); // Estado para el spinner
-  const [successMessage, setSuccessMessage] = useState(''); 
-  // Función para manejar cambios en los campos
   const handleFieldChange = (field, value) => {
     setFormData({ ...formData, [field]: value });
   };
 
-  // Función para formatear el valor como porcentaje
-  const formatValue = (value) => {
-    return `${value} %`;
+  const handleValorChange = (value) => {
+    // Eliminar el símbolo % si está presente
+    const numericValue = value.replace('%', '');
+    setFormData({ ...formData, valor: numericValue });
+  };
+  const areaUnidades = {
+    "Abastecimiento": ["Armado de Cajas", "Bodega"],
+    "Administración": ["Administración"],
+    "Calidad": ["Aseguramiento de Calidad"],
+    "Congelado": ["Cambio de Embalaje", "Carton Freezer", "Congelado", "Paletizado"],
+    "Control de Producción": ["Control de Producción", "Informática", "Romana de Camiones"],
+    "Cortes Especiales": ["Sala de Laminado", "Cortes Especiales", "Ecualizado", "Marinado", "Pimentado", "Porcionado"],
+    "Despacho": ["Despacho"],
+    "Desposte": ["Calibrado Fresco", "Desposte", "Rectificado"],
+    "Faena": ["Butina", "Corrales", "Faena", "Lavado de Camiones"],
+    "General": ["Estatus Planta RO", "Planta Rosario", "Resumen Semanal", "Skyview"],
+    "Mantenimiento": ["Mantenimiento"],
+    "Personas": ["Personas", "SSO"],
+    "Producción": ["Cumplimiento de Producción"],
+    "Producción Animal": ["Producción Animal", "Torre Producción Animal"],
+    "Servicios": ["Servicios"],
+    "Torre de Control": ["Torre de Control"]
   };
 
+  const handleAreaChange = (value) => {
+    setFormData({
+      ...formData,
+      area: value,
+      unidad: '' // Resetear la unidad cuando cambia el área
+    });
+  };
+  const validateForm = () => {
+    const requiredFields = [
+      'tipo_notificacion',
+      'sentido',
+      'desviacion',
+      'canal_comunicacion',
+      'area',
+    ];
+    for (const field of requiredFields) {
+      if (!formData[field]) {
+        setErrorMessage(`Complete el campo: ${field}`);
+        return false;
+      }
+    }
+    setErrorMessage('');
+    return true;
+  };
   // Manejador de envío del formulario
   const handleSubmit = async () => {
-    setIsLoading(true); // Activar el spinner
-    setSuccessMessage(''); // Limpiar mensajes anteriores
-
+    if (!validateForm()) return; // Validar campos antes de enviar
+  
+    setIsLoading(true);
+    setSuccessMessage('');
     const token = localStorage.getItem('token');
     if (!token) {
       alert('No estás autenticado. Por favor, inicia sesión.');
       navigate('/');
-      setIsLoading(false); // Desactivar el spinner si hay error
+      setIsLoading(false);
       return;
     }
-
+  
     try {
       await axios.post(
         'http://127.0.0.1:8000/api/formulario/',
         formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-      setSuccessMessage('Formulario enviado exitosamente'); // Mostrar mensaje de éxito
+      setSuccessMessage('Registro agregado correctamente');
+  
+      // Limpiar el formulario después de 3 segundos
+      setTimeout(() => {
+        setFormData({
+          tipo_notificacion: '',
+          sentido: '',
+          desviacion: '',
+          canal_comunicacion: '',
+          area: '',
+          unidad: '',
+          indicador: '',
+          valor: '',
+          hora_desviacion: '',
+          respuesta: '',
+          sku: '',
+          producto: '',
+          receptor: '',
+          observaciones: '',
+        });
+        setSuccessMessage('');
+      }, 3000);
     } catch (error) {
       console.error('Error enviando formulario', error);
       if (error.response && error.response.status === 401) {
@@ -81,11 +170,13 @@ const Formulario = () => {
         navigate('/');
       }
     } finally {
-      setIsLoading(false); // Desactivar el spinner al finalizar
+      setIsLoading(false);
     }
   };
 
   return (
+    <>
+    <Header />
     <Box className= "form-container">
       <Typography variant="h5" gutterBottom>
         Formulario de Registro
@@ -99,9 +190,10 @@ const Formulario = () => {
               row
               value={formData.tipo_notificacion}
               onChange={(e) => handleFieldChange('tipo_notificacion', e.target.value)}
+              color='success'
             >
               {['Alerta', 'Aviso', 'Información'].map((option) => (
-                <FormControlLabel key={option} value={option} control={<Radio />} label={option} />
+                <FormControlLabel key={option} value={option} control={<Radio />} label={option}  />
               ))}
             </RadioGroup>
           </Grid>
@@ -183,7 +275,7 @@ const Formulario = () => {
             </FormControl>
           </Grid>
           <Grid item xs={12} sm={4}>
-            <FormControl fullWidth disabled={!formData.area || formData.area === ''}>
+            <FormControl fullWidth disabled={!formData.area}>
               <InputLabel>Unidad</InputLabel>
               <Select
                 value={formData.unidad}
@@ -191,8 +283,7 @@ const Formulario = () => {
                 label="Unidad"
               >
                 <MenuItem value="">Seleccionar...</MenuItem>
-                {formData.area &&
-                  ['Armado de Cajas', 'Bodega'].map((option) => (
+                  {formData.area && areaUnidades[formData.area].map((option) => (
                     <MenuItem key={option} value={option}>
                       {option}
                     </MenuItem>
@@ -214,8 +305,8 @@ const Formulario = () => {
             <TextField
               fullWidth
               label="Valor %"
-              value={formData.valor}
-              onChange={(e) => handleFieldChange('valor', formatValue(e.target.value))}
+              value={formData.valor ? `${formData.valor}%` : ''}
+              onChange={(e) => handleValorChange(e.target.value)}
               inputProps={{ inputMode: 'numeric' }}
             />
           </Grid>
@@ -250,23 +341,28 @@ const Formulario = () => {
           </Grid>
           <Grid item xs={12} sm={4}>
             <FormControl fullWidth>
-              <InputLabel>SKU</InputLabel>
-              <Select
-                value={`${formData.sku} - ${formData.producto}`}
-                onChange={(e) => {
-                  const [sku, producto] = e.target.value.split(' - ');
-                  handleFieldChange('sku', sku);
-                  handleFieldChange('producto', producto);
+              
+              <Autocomplete
+                options={skuOptions.slice(1)} // Omitir la primera opción vacía
+                getOptionLabel={(option) => option}
+                value={formData.sku && formData.producto ? `${formData.sku} - ${formData.producto}` : ''}
+                onChange={(event, newValue) => {
+                  if (newValue) {
+                    const [sku, producto] = newValue.split(' - ');
+                    handleFieldChange('sku', sku.trim());
+                    handleFieldChange('producto', producto.trim());
+                  } else {
+                    handleFieldChange('sku', '');
+                    handleFieldChange('producto', '');
+                  }
                 }}
-                label="SKU"
-              >
-                <MenuItem value="">Seleccionar...</MenuItem>
-                {['123 - Carne', '456 - Pollo', '789 - Cerdo'].map((option) => (
-                  <MenuItem key={option} value={option}>
-                    {option}
-                  </MenuItem>
-                ))}
-              </Select>
+                renderInput={(params) => (
+                   <TextField {...params} 
+                      label="SKU" 
+                      placeholder='Buscar SKU...'
+                  />
+                )}
+              />
             </FormControl>
           </Grid>
           <Grid item xs={12} sm={4}>
@@ -303,14 +399,15 @@ const Formulario = () => {
         </Box>
         {/* Mensaje de éxito */}
         {successMessage && (
-          <Box sx={{ textAlign: 'center', marginTop: 2 }}>
+          <Alert icon={<CheckIcon fontSize="inherit" />} severity="success">
             <Typography variant="body1" color="green">
               {successMessage}
             </Typography>
-          </Box>
+          </Alert>
         )}
       </form>
     </Box>
+  </>
   );
 };
 

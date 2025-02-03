@@ -28,7 +28,39 @@ class LoginView(APIView):
         else:
             return Response({'error': 'Credenciales inválidas'}, status=status.HTTP_401_UNAUTHORIZED)
 
+class SKULoadView(APIView):
+    permission_classes = [IsAuthenticated]
 
+    def get(self, request):
+        try:
+            # Configurar SharePoint
+            sharepoint_url = "https://agrosuper.sharepoint.com/sites/PanelPlantaRosario"
+            folder_path = "/sites/PanelPlantaRosario/Documentos compartidos/1.- Torre de Control/1.- Gestión TC/2- Registro Bitácora TC (interfaz web)"
+            archivo_excel = 'SKU.xlsx'
+
+            ctx = ClientContext(sharepoint_url).with_credentials(
+                UserCredential('aialvarado@agrosuper.com', 'Produccion2025.')
+            )
+
+            # Leer el archivo existente desde SharePoint
+            response = ctx.web.get_file_by_server_relative_url(folder_path + "/" + archivo_excel).execute_query()
+            file_content = io.BytesIO()
+            response.download(file_content).execute_query()
+            file_content.seek(0)
+
+            # Leer el archivo Excel
+            df_sku = pd.read_excel(file_content)
+
+            # Verificar que el archivo tenga las columnas esperadas
+            if 'SKU' not in df_sku.columns or 'Producto' not in df_sku.columns:
+                return Response({'error': 'El archivo SKU.xlsx no tiene el formato esperado.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Generar las opciones en el formato "SKU - Producto"
+            sku_options = ["Seleccionar..."] + [f"{row['SKU']} - {row['Producto']}" for _, row in df_sku.iterrows()]
+
+            return Response({'skuOptions': sku_options}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 class FormularioView(APIView):
     permission_classes = [IsAuthenticated]
     
@@ -75,14 +107,14 @@ class FormularioView(APIView):
                 "Emisor": full_name,
                 "Área": data.get('area'),
                 "Unidad": data.get('unidad'),
-                "Indicador": data.get('indicador'),
+                "Indicador": data.get('indicador').title(),
                 "Valor %": data.get('valor'),
                 "Desviación": data.get('desviacion'),
                 "Hora de Desviación": data.get('hora_desviacion'),
                 "Respuesta": data.get('respuesta'),
                 "SKU": data.get('sku'),
                 "Producto": data.get('producto'),
-                "Receptor": data.get('receptor'),
+                "Receptor": data.get('receptor').title(),
                 "Observaciones": data.get('observaciones')
             }])
 
@@ -138,5 +170,46 @@ class FormularioView(APIView):
 
             return Response({'message': 'Registro guardado exitosamente'}, status=status.HTTP_200_OK)
 
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+class UserProfileView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        user = request.user
+        data = {
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'email': user.email,
+        }
+        return Response(data)
+
+class BitacoraDataView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        try:
+            # Configurar SharePoint
+            sharepoint_url = "https://agrosuper.sharepoint.com/sites/PanelPlantaRosario"
+            folder_path = "/sites/PanelPlantaRosario/Documentos compartidos/1.- Torre de Control/1.- Gestión TC/2- Registro Bitácora TC (interfaz web)"
+            archivo_excel = 'Bitácora TC.xlsx'
+
+            ctx = ClientContext(sharepoint_url).with_credentials(
+                UserCredential('user', 'pass')
+            )
+
+            # Leer el archivo existente desde SharePoint
+            response = ctx.web.get_file_by_server_relative_url(folder_path + "/" + archivo_excel).execute_query()
+            file_content = io.BytesIO()
+            response.download(file_content).execute_query()
+            file_content.seek(0)
+
+            # Leer el archivo Excel
+            df = pd.read_excel(file_content)
+
+            # Convertir el DataFrame a JSON
+            data = df.to_dict(orient='records')
+
+            return Response({'data': data}, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
