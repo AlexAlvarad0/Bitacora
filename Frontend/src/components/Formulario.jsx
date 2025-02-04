@@ -4,7 +4,6 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
-  Button,
   FormControl,
   InputLabel,
   MenuItem,
@@ -17,10 +16,11 @@ import {
   Radio,
   Alert,
 } from '@mui/material';
-import {SyncLoader} from 'react-spinners';
+import LoadingDots from './Loading';
 import { Autocomplete } from '@mui/material';
 import Header from './Header';
 import CheckIcon from '@mui/icons-material/Check';
+import '../styles/boton.css';
 
 const Formulario = () => {
   const [skuOptions, setSkuOptions] = useState([]);
@@ -155,7 +155,7 @@ const Formulario = () => {
           valor: '',
           hora_desviacion: '',
           respuesta: '',
-          sku: '',
+          sku: '',  // Asegurarse de que el SKU se esté limpiando
           producto: '',
           receptor: '',
           observaciones: '',
@@ -185,7 +185,7 @@ const Formulario = () => {
         <Grid container spacing={3}>
           {/* Fila 1 */}
           <Grid item xs={12} sm={4}>
-            <Typography variant="subtitle1">Tipo de Notificación</Typography>
+            <Typography variant="subtitle1" color=' #003087'>Tipo de Notificación</Typography>
             <RadioGroup
               row
               value={formData.tipo_notificacion}
@@ -198,7 +198,7 @@ const Formulario = () => {
             </RadioGroup>
           </Grid>
           <Grid item xs={12} sm={4}>
-            <Typography variant="subtitle1">Sentido</Typography>
+            <Typography variant="subtitle1" color=' #003087'>Sentido</Typography>
             <RadioGroup
               row
               value={formData.sentido}
@@ -210,11 +210,12 @@ const Formulario = () => {
             </RadioGroup>
           </Grid>
           <Grid item xs={12} sm={4}>
-            <Typography variant="subtitle1">Desviación</Typography>
+            <Typography variant="subtitle1"color=' #003087'>Desviación</Typography>
             <RadioGroup
               row
               value={formData.desviacion}
               onChange={(e) => handleFieldChange('desviacion', e.target.value)}
+              
             >
               {['D1', 'D2', 'D3', 'D4'].map((option) => (
                 <FormControlLabel key={option} value={option} control={<Radio />} label={option} />
@@ -230,6 +231,21 @@ const Formulario = () => {
                 value={formData.canal_comunicacion}
                 onChange={(e) => handleFieldChange('canal_comunicacion', e.target.value)}
                 label="Canal de Comunicación"
+                sx={{
+                  borderRadius: '15px',
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    border: '2px solid #e8e8e8',
+                  },
+                  '&:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: '#0077ff',
+                  },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: '#0095ff',
+                  },
+                  '& .MuiSelect-select': {
+                    padding: '15px',
+                  }
+                }}
               >
                 <MenuItem value="">Seleccionar...</MenuItem>
                 {['Correo', 'Presencial', 'Radio', 'Teléfono Fijo', 'WhatsApp'].map((option) => (
@@ -246,7 +262,23 @@ const Formulario = () => {
               <Select
                 value={formData.area}
                 onChange={(e) => handleFieldChange('area', e.target.value)}
+                sx={{
+                  borderRadius: '15px',
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    border: '2px solid #e8e8e8',
+                  },
+                  '&:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: '#0077ff',
+                  },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: '#0095ff',
+                  },
+                  '& .MuiSelect-select': {
+                    padding: '15px',
+                  }
+                }}
                 label="Área"
+                
               >
                 <MenuItem value="">Seleccionar...</MenuItem>
                 {[
@@ -281,6 +313,21 @@ const Formulario = () => {
                 value={formData.unidad}
                 onChange={(e) => handleFieldChange('unidad', e.target.value)}
                 label="Unidad"
+                sx={{
+                  borderRadius: '15px',
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    border: '2px solid #e8e8e8',
+                  },
+                  '&:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: '#0077ff',
+                  },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: '#0095ff',
+                  },
+                  '& .MuiSelect-select': {
+                    padding: '15px',
+                  }
+                }}
               >
                 <MenuItem value="">Seleccionar...</MenuItem>
                   {formData.area && areaUnidades[formData.area].map((option) => (
@@ -299,6 +346,22 @@ const Formulario = () => {
               label="Indicador"
               value={formData.indicador}
               onChange={(e) => handleFieldChange('indicador', e.target.value)}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  '& fieldset': {
+                    borderRadius: '15px',
+                  },
+                  '&:hover fieldset': {
+                    borderColor: '#0077ff',
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: '#0095ff',
+                  },
+                },
+                '& .MuiInputBase-input': {
+                  padding: '15px',
+                }
+              }}
             />
           </Grid>
           <Grid item xs={12} sm={4}>
@@ -307,6 +370,22 @@ const Formulario = () => {
               label="Valor %"
               value={formData.valor ? `${formData.valor}%` : ''}
               onChange={(e) => handleValorChange(e.target.value)}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  '& fieldset': {
+                    borderRadius: '15px',
+                  },
+                  '&:hover fieldset': {
+                    borderColor: '#0077ff',
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: '#0095ff',
+                  },
+                },
+                '& .MuiInputBase-input': {
+                  padding: '15px',
+                }
+              }}
               inputProps={{ inputMode: 'numeric' }}
             />
           </Grid>
@@ -317,11 +396,28 @@ const Formulario = () => {
               type="time" // Usamos el tipo "time" para el selector de hora
               value={formData.hora_desviacion}
               onChange={(e) => handleFieldChange('hora_desviacion', e.target.value)}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  '& fieldset': {
+                    borderRadius: '15px',
+                  },
+                  '&:hover fieldset': {
+                    borderColor: '#0077ff',
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: '#0095ff',
+                  },
+                },
+                '& .MuiInputBase-input': {
+                  padding: '15px',
+                }
+              }}
               InputLabelProps={{
                 shrink: true, // Asegura que la etiqueta no se superponga al valor
               }}
               inputProps={{
-                step: 300, // Incremento en segundos (5 minutos)
+                step: 300,
+               // Incremento en segundos (5 minutos)
               }}
             />
           </Grid>
@@ -346,6 +442,22 @@ const Formulario = () => {
                 options={skuOptions.slice(1)} // Omitir la primera opción vacía
                 getOptionLabel={(option) => option}
                 value={formData.sku && formData.producto ? `${formData.sku} - ${formData.producto}` : ''}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': {
+                      borderRadius: '15px',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: '#0077ff',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: '#0095ff',
+                    },
+                  },
+                  '& .MuiInputBase-input': {
+                    padding: '15px',
+                  }
+                }}
                 onChange={(event, newValue) => {
                   if (newValue) {
                     const [sku, producto] = newValue.split(' - ');
@@ -370,6 +482,22 @@ const Formulario = () => {
               fullWidth
               label="Receptor"
               value={formData.receptor}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  '& fieldset': {
+                    borderRadius: '15px',
+                  },
+                  '&:hover fieldset': {
+                    borderColor: '#0077ff',
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: '#0095ff',
+                  },
+                },
+                '& .MuiInputBase-input': {
+                  padding: '15px',
+                }
+              }}
               onChange={(e) => handleFieldChange('receptor', e.target.value)}
             />
           </Grid>
@@ -382,6 +510,22 @@ const Formulario = () => {
               multiline
               rows={3}
               value={formData.observaciones}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  '& fieldset': {
+                    borderRadius: '15px',
+                  },
+                  '&:hover fieldset': {
+                    borderColor: '#0077ff',
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: '#0095ff',
+                  },
+                },
+                '& .MuiInputBase-input': {
+                  padding: '15px',
+                }
+              }}
               onChange={(e) => handleFieldChange('observaciones', e.target.value)}
             />
           </Grid>
@@ -389,14 +533,17 @@ const Formulario = () => {
 
         {/* Botón de Guardar y Spinner */}
         <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: 3 }}>
-          {isLoading ? (
-            <SyncLoader color="#005fb3" size={15} /> // Spinner mientras se carga
-          ) : (
-            <Button variant="contained" color="primary" onClick={handleSubmit}>
-              Guardar Registro
-            </Button>
-          )}
-        </Box>
+  {isLoading ? (
+    <LoadingDots />
+  ) : (
+    <div className="buttons">
+      <button onClick={handleSubmit}>
+        <span></span>
+        <p data-start="Guardando..." data-text="Guardar Registro" data-title="Guardar Registro"></p>
+      </button>
+    </div>
+  )}
+</Box>
         {/* Mensaje de éxito */}
         {successMessage && (
           <Alert icon={<CheckIcon fontSize="inherit" />} severity="success">

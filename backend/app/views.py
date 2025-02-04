@@ -68,11 +68,12 @@ class FormularioView(APIView):
         try:
             # Obtener los datos del formulario
             data = request.data
+            print("Datos recibidos del formulario:", data)  # Depuración
 
             # Definir colores para cada tipo de desviación
             desviacion_colors = {
                 'D1': '00FF00',  # Verde
-                'D2': 'FFFF00',  # Amarillo
+                'D2': '00FF00',  # Amarillo
                 'D3': 'FFA500',  # Naranja
                 'D4': 'FF0000'   # Rojo
             }
@@ -112,14 +113,16 @@ class FormularioView(APIView):
                 "Desviación": data.get('desviacion'),
                 "Hora de Desviación": data.get('hora_desviacion'),
                 "Respuesta": data.get('respuesta'),
-                "SKU": data.get('sku'),
+                "SKU": data.get('sku'),  # Asegurarse de que el SKU se esté guardando
                 "Producto": data.get('producto'),
                 "Receptor": data.get('receptor').title(),
                 "Observaciones": data.get('observaciones')
             }])
+            print("Nuevo registro creado:", nuevo_registro)  # Depuración
 
             # Combinar los datos existentes con el nuevo registro
             df_final = pd.concat([df_existente, nuevo_registro], ignore_index=True)
+            print("DataFrame final:", df_final)  # Depuración
 
             # Guardar el DataFrame en un archivo Excel en memoria
             excel_file = io.BytesIO()

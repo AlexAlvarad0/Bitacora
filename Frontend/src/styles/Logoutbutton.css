@@ -1,0 +1,69 @@
+/* From Uiverse.io by vinodjangid07 */ 
+.Btn {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: 125px; /* Cambiar el tamaño inicial */
+    height: 45px;
+    border: none;
+    border-radius: 40px; /* Cambiar el radio inicial */
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: all .3s ease; /* Mejorar la transición */
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.199);
+    background-color: rgb(255, 65, 65);
+  }
+  
+  /* plus sign */
+  .sign {
+    width: 30%; /* Ajustar el tamaño inicial */
+    transition: all .3s ease; /* Mejorar la transición */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-left: 20px; /* Ajustar el padding inicial */
+  }
+  
+  .sign svg {
+    width: 17px;
+  }
+  
+  .sign svg path {
+    fill: white;
+  }
+  /* text */
+  .text {
+    position: absolute;
+    right: 0%;
+    width: 70%; /* Ajustar el tamaño inicial */
+    opacity: 1; /* Ajustar la opacidad inicial */
+    color: white;
+    font-size: 1.2em;
+    font-weight: 600;
+    transition: all .3s ease; /* Mejorar la transición */
+    padding-right: 10px; /* Ajustar el padding inicial */
+  }
+  /* hover effect on button width */
+  .Btn:hover {
+    width: 125px;
+    border-radius: 40px;
+    transition: all .3s ease; /* Mejorar la transición */
+  }
+  
+  .Btn:hover .sign {
+    width: 30%;
+    transition: all .3s ease; /* Mejorar la transición */
+    padding-left: 20px;
+  }
+  /* hover effect button's text */
+  .Btn:hover .text {
+    opacity: 1;
+    width: 70%;
+    transition: all .3s ease; /* Mejorar la transición */
+    padding-right: 10px;
+  }
+  /* button click effect*/
+  .Btn:active {
+    transform: translate(2px ,2px);
+  }

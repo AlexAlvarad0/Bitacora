@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { AppBar, Toolbar, Typography, Button, Avatar, Menu, MenuItem, IconButton } from '@mui/material';
+import { AppBar, Toolbar, Avatar, Menu, MenuItem, IconButton } from '@mui/material';
 import logo from '../images/ORIGINAL SECUNDARIO-01.png'; // Importar el logo
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-
+import 'animate.css';
 const Header = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [userData, setUserData] = useState(null);
@@ -46,12 +46,12 @@ const Header = () => {
   };
 
   return (
-    <AppBar position="static" color="primary">
+    <AppBar position="static" color="primary" sx={{ backgroundColor:'#003087'}}>
       <Toolbar>
         {/* Logo y Título */}
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <img src={logo} alt="Logo" style={{ width: '70px', marginRight: '10px' }} />
-          <Typography variant="h6">Registro Bitácora TC</Typography>
+          <h1>Registro Bitácora TC</h1>
         </div>
 
         {/* Barra de Navegación */}

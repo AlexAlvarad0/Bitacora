@@ -3,6 +3,8 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import './Login.css';
 import logo from '../images/ORIGINAL SECUNDARIO-01.png';
+import '../styles/botoninisesion.css';
+import '../styles/fonts.css'; // Import the new CSS file for fonts
 
 const Login = () => {
   const [username, setUsername] = useState('');
@@ -49,14 +51,18 @@ const Login = () => {
             />
           </div>
           
-          <button className="login-button" onClick={handleLogin}>
+          <buttonn onClick={handleLogin}>
             Iniciar Sesión
-          </button>
+              <div className="arrow-wrapper">
+                <div className="arrow"></div>
+              </div>
+          </buttonn>
 
         </div>
         
         <div className="welcome-side">
-          <h2>Registro de Bitácora TC</h2>
+          <h2>Registro Bitácora TC</h2>
+          <p></p>
           <img 
           src={logo} 
           alt='Logo' 

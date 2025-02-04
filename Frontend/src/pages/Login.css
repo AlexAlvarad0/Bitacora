@@ -1,22 +1,44 @@
-
 /* Login.css */
+@import url('../styles/fonts.css');
+
 body {
     margin: 0;
-    font-family: Arial, sans-serif;
+    font-family: 'Gotham-Light', Arial, sans-serif; /* Apply Gotham-Light font */
     background-color: #f5f7fa;
         align-items: center;
     height: 100vh;
+    
 }
 
 .login-container {
+    min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
-    padding: 20px;
+    background-image: url('../images/fondo.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
+  }
+  
+  .login-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: inherit;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    filter: blur(12px);
+    opacity: 0.75;
 }
 
 .login-card {
+    position: relative;
+    z-index: 1;
     display: flex;
     background-color: white;
     border-radius: 15px;
@@ -24,6 +46,7 @@ body {
     width: 100%;
     max-width: 900px;
     overflow: hidden;
+    
 }
 
 .login-form {
@@ -33,7 +56,7 @@ body {
 
 .welcome-side {
     flex: 1;
-    background: linear-gradient(135deg, #2563eb, #1e40af);
+    background: linear-gradient(135deg, #003087, #2563eb);
     padding: 40px;
     display: flex;
     flex-direction: column;
@@ -41,6 +64,7 @@ body {
     align-items: center;
     color: white;
     text-align: center;
+    
 }
 
 .title-section {
@@ -51,6 +75,7 @@ body {
     font-size: 24px;
     color: #333;
     margin-bottom: 5px;
+    font-family: 'Gotham-Bold', sans-serif; /* Apply Gotham-Bold font */
 }
 
 .social-icons {
@@ -63,7 +88,7 @@ body {
     width: 35px;
     height: 35px;
     border: 1px solid #e5e7eb;
-    border-radius: 50%;
+    border-radius: 15px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -89,10 +114,10 @@ body {
 }
 
 .input-group input {
-    width: 100%;
+    width: 94%;
     padding: 12px;
     border: 1px solid #e5e7eb;
-    border-radius: 8px;
+    border-radius: 15px;
     background-color: #f9fafb;
     font-size: 14px;
     transition: all 0.3s ease;
@@ -100,14 +125,14 @@ body {
 
 .input-group input:focus {
     outline: none;
-    border-color: #2563eb;
+    border-color: #003087;
     background-color: white;
 }
 
 .login-button {
     width: 70%;
     padding: 12px;
-    background-color: #2563eb;
+    background-color: #003087;
     color: white;
     border: none;
     border-radius: 8px;
@@ -143,7 +168,7 @@ body {
 }
 
 .forgot-password {
-    color: #2563eb;
+    color: #003087;
     text-decoration: none;
     font-size: 14px;
 }
@@ -155,6 +180,7 @@ body {
 .welcome-side h2 {
     font-size: 30px;
     margin-bottom: 15px;
+    font-family: 'Gotham-Bold', sans-serif; /* Apply Gotham-Bold font */
 }
 
 .welcome-side p {

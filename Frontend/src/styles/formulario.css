@@ -16,7 +16,7 @@ body {
 
 /* Estilos para el título del formulario */
 .form-container h5 {
-    color: #1976d2;
+    color: #003087;
     margin-bottom: 30px;
     font-size: 24px;
     font-weight: 600;
@@ -24,12 +24,12 @@ body {
 
 /* Estilos para las secciones de radio buttons */
 .MuiFormControl-root .MuiFormLabel-root {
-    color: #1976d2;
+    color: #003087;
     font-weight: 500;
 }
 
 .MuiRadio-root.Mui-checked {
-    color: #1976d2;
+    color: #003087;
 }
 
 /* Estilos para los campos de selección */
@@ -51,11 +51,11 @@ body {
 }
 
 .MuiTextField-root .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
-    border-color: #1976d2;
+    border-color: #003087;
 }
 
 .MuiTextField-root .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
-    border-color: #1976d2;
+    border-color: #003087;
 }
 
 /* Estilos para las etiquetas de los campos */
@@ -64,7 +64,7 @@ body {
 }
 
 .MuiInputLabel-root.Mui-focused {
-    color: #1976d2;
+    color: #003087;
 }
 
 /* Estilos para el área de observaciones */
@@ -74,7 +74,7 @@ body {
 
 /* Estilos para el botón de guardar */
 .MuiButton-containedPrimary {
-    background-color: #1976d2;
+    background-color: #003087;
     padding: 10px 30px;
     font-size: 16px;
     text-transform: none;
@@ -82,7 +82,7 @@ body {
 }
 
 .MuiButton-containedPrimary:hover {
-    background-color: #1565c0;
+    background-color: #003087;
 }
 
 /* Estilos para las subtítulos */
