@@ -20,7 +20,8 @@ import LoadingDots from './Loading';
 import { Autocomplete } from '@mui/material';
 import Header from './Header';
 import CheckIcon from '@mui/icons-material/Check';
-import '../styles/boton.css';
+import '../styles/boton.css'
+import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
 
 const Formulario = () => {
   const [skuOptions, setSkuOptions] = useState([]);
@@ -110,6 +111,7 @@ const Formulario = () => {
       'desviacion',
       'canal_comunicacion',
       'area',
+      'sku',
     ];
     for (const field of requiredFields) {
       if (!formData[field]) {
@@ -179,7 +181,7 @@ const Formulario = () => {
     <Header />
     <Box className= "form-container">
       <Typography variant="h5" gutterBottom>
-        Formulario de Registro
+        Formulario de Registro <LibraryBooksIcon />
       </Typography>
       <form onSubmit={(e) => e.preventDefault()}>
         <Grid container spacing={3}>
@@ -424,7 +426,7 @@ const Formulario = () => {
 
           {/* Fila 4 */}
           <Grid item xs={12} sm={4}>
-            <Typography variant="subtitle1">Respuesta</Typography>
+            <Typography variant="subtitle1" color=' #003087'>Respuesta</Typography>
             <RadioGroup
               row
               value={formData.respuesta}

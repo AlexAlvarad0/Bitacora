@@ -4,7 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import './Login.css';
 import logo from '../images/ORIGINAL SECUNDARIO-01.png';
 import '../styles/botoninisesion.css';
-import '../styles/fonts.css'; // Import the new CSS file for fonts
+import '../styles/fonts.css';
+import LockIcon from '@mui/icons-material/Lock';
+import PersonIcon from '@mui/icons-material/Person';
 
 const Login = () => {
   const [username, setUsername] = useState('');
@@ -15,6 +17,7 @@ const Login = () => {
     try {
       const response = await axios.post('http://127.0.0.1:8000/api/login/', { username, password });
       localStorage.setItem('token', response.data.access);
+      localStorage.setItem('refresh_token', response.data.refresh);
       navigate('/formulario');
     } catch (error) {
       console.error('Error logging in', error);
@@ -32,17 +35,18 @@ const Login = () => {
           </div>
           
           <div className="input-group">
-            <label>NOMBRE DE USUARIO</label>
+          <PersonIcon />
             <input
               type="text"
               placeholder="Nombre de usuario"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
+            
             />
           </div>
           
           <div className="input-group">
-            <label>CONTRASEÑA</label>
+          <LockIcon />
             <input
               type="password"
               placeholder="Contraseña"

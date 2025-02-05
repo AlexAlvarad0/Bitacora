@@ -6,4 +6,5 @@ urlpatterns = [
     path('formulario/', FormularioView.as_view(), name='formulario'),
     path('sku/', SKULoadView.as_view(), name='sku-load'),
     path('user/profile/', UserProfileView.as_view(), name='user-profile'),
+    path('bitacora/', BitacoraDataView.as_view(), name='bitacora-data'),
 ]

@@ -101,8 +101,10 @@ body {
 }
 
 .input-group {
-    margin-bottom: 20px;
-}
+    position: relative;
+    width: 100%;
+    margin-bottom: 15px;
+  }
 
 .input-group label {
     display: block;
@@ -115,7 +117,7 @@ body {
 
 .input-group input {
     width: 94%;
-    padding: 12px;
+    padding: 10px 10px 10px 35px; 
     border: 1px solid #e5e7eb;
     border-radius: 15px;
     background-color: #f9fafb;
@@ -128,7 +130,14 @@ body {
     border-color: #003087;
     background-color: white;
 }
-
+.input-group svg {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #666;
+    font-size: 20px;
+  }
 .login-button {
     width: 70%;
     padding: 12px;

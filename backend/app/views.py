@@ -12,6 +12,9 @@ import io
 import openpyxl
 from openpyxl.styles import PatternFill
 from datetime import datetime
+import json
+import math
+from django.core.serializers.json import DjangoJSONEncoder
 
 class LoginView(APIView):
     def post(self, request):
@@ -198,7 +201,7 @@ class BitacoraDataView(APIView):
             archivo_excel = 'Bitácora TC.xlsx'
 
             ctx = ClientContext(sharepoint_url).with_credentials(
-                UserCredential('user', 'pass')
+                UserCredential('aialvarado@agrosuper.com', 'Produccion2025.')
             )
 
             # Leer el archivo existente desde SharePoint
@@ -210,7 +213,13 @@ class BitacoraDataView(APIView):
             # Leer el archivo Excel
             df = pd.read_excel(file_content)
 
-            # Convertir el DataFrame a JSON
+            # Convertir columna de fecha al formato específico
+            df['Fecha y Hora'] = pd.to_datetime(df['Fecha y Hora'], format='%d-%m-%Y %H:%M:%S').dt.strftime('%d-%m-%Y %H:%M:%S')
+
+            # Limpiar datos y manejar valores NaN
+            df = df.fillna('')
+        
+            # Convertir DataFrame a lista de diccionarios
             data = df.to_dict(orient='records')
 
             return Response({'data': data}, status=status.HTTP_200_OK)
