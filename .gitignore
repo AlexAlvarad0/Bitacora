@@ -31,3 +31,6 @@ node_modules
 node_modules/*
 
 pycache/
+
+.git/objects
+./git/objects
