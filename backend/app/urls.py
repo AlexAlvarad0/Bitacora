@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import LoginView, FormularioView, SKULoadView, UserProfileView, BitacoraDataView
+from .views import LoginView, FormularioView, SKULoadView, UserProfileView, BitacoraDataView, CargaMasivaView
 
 urlpatterns = [
     path('login/', LoginView.as_view(), name='login'),
@@ -7,4 +7,5 @@ urlpatterns = [
     path('sku/', SKULoadView.as_view(), name='sku-load'),
     path('user/profile/', UserProfileView.as_view(), name='user-profile'),
     path('bitacora/', BitacoraDataView.as_view(), name='bitacora-data'),
+    path('carga-masiva/', CargaMasivaView.as_view(), name='carga-masiva'),
 ]

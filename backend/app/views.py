@@ -58,30 +58,19 @@ class SKULoadView(APIView):
             if 'SKU' not in df_sku.columns or 'Producto' not in df_sku.columns:
                 return Response({'error': 'El archivo SKU.xlsx no tiene el formato esperado.'}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Generar las opciones en el formato "SKU - Producto"
-            sku_options = ["Seleccionar..."] + [f"{row['SKU']} - {row['Producto']}" for _, row in df_sku.iterrows()]
+            # Convertir DataFrame a lista de diccionarios
+            sku_data = df_sku.to_dict('records')
 
-            return Response({'skuOptions': sku_options}, status=status.HTTP_200_OK)
+            return Response({'skuData': sku_data}, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 class FormularioView(APIView):
     permission_classes = [IsAuthenticated]
     
     def post(self, request):
         try:
-            # Obtener los datos del formulario
             data = request.data
-            print("Datos recibidos del formulario:", data)  # Depuración
-
-            # Definir colores para cada tipo de desviación
-            desviacion_colors = {
-                'D1': '00FF00',  # Verde
-                'D2': '00FF00',  # Amarillo
-                'D3': 'FFA500',  # Naranja
-                'D4': 'FF0000'   # Rojo
-            }
-
-            # Configurar SharePoint
             sharepoint_url = "https://agrosuper.sharepoint.com/sites/PanelPlantaRosario"
             folder_path = "/sites/PanelPlantaRosario/Documentos compartidos/1.- Torre de Control/1.- Gestión TC/2- Registro Bitácora TC (interfaz web)"
             archivo_excel = 'Bitácora TC.xlsx'
@@ -96,13 +85,15 @@ class FormularioView(APIView):
             response.download(file_content).execute_query()
             file_content.seek(0)
 
-            # Leer el archivo Excel
-            df_existente = pd.read_excel(file_content)
+            # Leer todas las hojas del archivo Excel
+            xls = pd.ExcelFile(file_content)
+            df_existente = pd.read_excel(xls, sheet_name='Hoja1')  # Asumiendo que los registros están en 'Hoja1'
+            df_sku = pd.read_excel(xls, sheet_name='SKU')  # Leer la hoja SKU
 
-            # Obtener el nombre completo del usuario autenticado
             user = request.user
             full_name = f"{user.first_name} {user.last_name}"
-            # Crear un nuevo registro
+            sku = data.get('sku')
+            # Crear nuevo registro con fórmula VLOOKUP para el producto
             nuevo_registro = pd.DataFrame([{
                 "Fecha y Hora": datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
                 "Tipo Notificación": data.get('tipo_notificacion'),
@@ -116,25 +107,33 @@ class FormularioView(APIView):
                 "Desviación": data.get('desviacion'),
                 "Hora de Desviación": data.get('hora_desviacion'),
                 "Respuesta": data.get('respuesta'),
-                "SKU": data.get('sku'),  # Asegurarse de que el SKU se esté guardando
-                "Producto": data.get('producto'),
+                "SKU": data.get('sku'),
+                "Producto": f'=VLOOKUP({sku},SKU!A:B,2,FALSE)',
                 "Receptor": data.get('receptor').title(),
                 "Observaciones": data.get('observaciones')
             }])
-            print("Nuevo registro creado:", nuevo_registro)  # Depuración
 
             # Combinar los datos existentes con el nuevo registro
             df_final = pd.concat([df_existente, nuevo_registro], ignore_index=True)
-            print("DataFrame final:", df_final)  # Depuración
 
-            # Guardar el DataFrame en un archivo Excel en memoria
+            # Crear un nuevo archivo Excel en memoria
             excel_file = io.BytesIO()
-            df_final.to_excel(excel_file, index=False)
-            excel_file.seek(0)
+            with pd.ExcelWriter(excel_file, engine='openpyxl') as writer:
+                df_final.to_excel(writer, sheet_name='Hoja1', index=False)
+                df_sku.to_excel(writer, sheet_name='SKU', index=False)
 
-            # Aplicar formato condicional a la columna de Desviación
+            # Cargar el archivo para aplicar formato
+            excel_file.seek(0)
             workbook = openpyxl.load_workbook(excel_file)
-            worksheet = workbook.active
+            worksheet = workbook['Hoja1']  # Trabajar con la hoja principal
+
+            # Aplicar formatos (el código existente de formato)
+            desviacion_colors = {
+                'D1': 'C6EFCE',
+                'D2': 'FFFF00',
+                'D3': 'FFA500',
+                'D4': 'FF0000'
+            }
 
             desv_col = None
             for idx, col in enumerate(df_final.columns):
@@ -152,7 +151,7 @@ class FormularioView(APIView):
                             fill_type='solid'
                         )
 
-            # Autoajustar el ancho de todas las columnas
+            # Autoajustar columnas
             for col in worksheet.columns:
                 max_length = 0
                 column = openpyxl.utils.get_column_letter(col[0].column)
@@ -165,7 +164,7 @@ class FormularioView(APIView):
                 adjusted_width = (max_length + 2)
                 worksheet.column_dimensions[column].width = adjusted_width
 
-            # Guardar los cambios en el archivo Excel
+            # Guardar el archivo con los cambios
             excel_file = io.BytesIO()
             workbook.save(excel_file)
             excel_file.seek(0)
@@ -178,6 +177,7 @@ class FormularioView(APIView):
 
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 class UserProfileView(APIView):
     permission_classes = [IsAuthenticated]
     
@@ -223,5 +223,121 @@ class BitacoraDataView(APIView):
             data = df.to_dict(orient='records')
 
             return Response({'data': data}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class CargaMasivaView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request):
+        try:
+            registros = request.data.get('registros', [])
+            if not registros:
+                return Response({'error': 'No se proporcionaron registros'}, status=status.HTTP_400_BAD_REQUEST)
+
+            sharepoint_url = "https://agrosuper.sharepoint.com/sites/PanelPlantaRosario"
+            folder_path = "/sites/PanelPlantaRosario/Documentos compartidos/1.- Torre de Control/1.- Gestión TC/2- Registro Bitácora TC (interfaz web)"
+            archivo_excel = 'Bitácora TC.xlsx'
+
+            ctx = ClientContext(sharepoint_url).with_credentials(
+                UserCredential('aialvarado@agrosuper.com', 'Produccion2025.')
+            )
+
+            # Leer el archivo existente
+            response = ctx.web.get_file_by_server_relative_url(folder_path + "/" + archivo_excel).execute_query()
+            file_content = io.BytesIO()
+            response.download(file_content).execute_query()
+            file_content.seek(0)
+
+            xls = pd.ExcelFile(file_content)
+            df_existente = pd.read_excel(xls, sheet_name='Hoja1')
+            df_sku = pd.read_excel(xls, sheet_name='SKU')
+
+            user = request.user
+            full_name = f"{user.first_name} {user.last_name}"
+
+            nuevos_registros = []
+            for registro in registros:
+                nuevo_registro = {
+                    "Fecha y Hora": datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
+                    "Tipo Notificación": registro['tipo_notificacion'],
+                    "Sentido": registro['sentido'],
+                    "Canal de Comunicación": registro['canal_comunicacion'],
+                    "Emisor": full_name,
+                    "Área": registro['area'],
+                    "Unidad": registro['unidad'],
+                    "Indicador": registro['indicador'],
+                    "Valor %": registro['valor'],
+                    "Desviación": registro['desviacion'],
+                    "Hora de Desviación": datetime.now().strftime("%H:%M"),
+                    "Respuesta": "No",
+                    "SKU": registro['sku'],
+                    "Producto": f'=VLOOKUP({registro["sku"]},SKU!A:B,2,FALSE)',
+                    "Receptor": registro['receptor'],
+                    "Observaciones": registro['observaciones']
+                }
+                nuevos_registros.append(nuevo_registro)
+
+            df_nuevos = pd.DataFrame(nuevos_registros)
+            df_final = pd.concat([df_existente, df_nuevos], ignore_index=True)
+
+            # Crear nuevo archivo Excel
+            excel_file = io.BytesIO()
+            with pd.ExcelWriter(excel_file, engine='openpyxl') as writer:
+                df_final.to_excel(writer, sheet_name='Hoja1', index=False)
+                df_sku.to_excel(writer, sheet_name='SKU', index=False)
+
+            # Aplicar formatos
+            excel_file.seek(0)
+            workbook = openpyxl.load_workbook(excel_file)
+            worksheet = workbook['Hoja1']
+
+            desviacion_colors = {
+                'D1': 'C6EFCE',
+                'D2': 'FFFF00',
+                'D3': 'FFA500',
+                'D4': 'FF0000'
+            }
+
+            desv_col = None
+            for idx, col in enumerate(df_final.columns):
+                if col == 'Desviación':
+                    desv_col = idx + 1
+                    break
+
+            if desv_col is not None:
+                for row in range(2, len(df_final) + 2):
+                    cell = worksheet.cell(row=row, column=desv_col)
+                    if cell.value in desviacion_colors:
+                        cell.fill = PatternFill(
+                            start_color=desviacion_colors[cell.value],
+                            end_color=desviacion_colors[cell.value],
+                            fill_type='solid'
+                        )
+
+            # Autoajustar columnas
+            for col in worksheet.columns:
+                max_length = 0
+                column = openpyxl.utils.get_column_letter(col[0].column)
+                for cell in col:
+                    try:
+                        if len(str(cell.value)) > max_length:
+                            max_length = len(str(cell.value))
+                    except:
+                        pass
+                adjusted_width = (max_length + 2)
+                worksheet.column_dimensions[column].width = adjusted_width
+
+            # Guardar y subir archivo
+            excel_file = io.BytesIO()
+            workbook.save(excel_file)
+            excel_file.seek(0)
+
+            target_folder = ctx.web.get_folder_by_server_relative_url(folder_path)
+            target_file = target_folder.upload_file(archivo_excel, excel_file.read()).execute_query()
+
+            return Response({'message': f'Se guardaron {len(registros)} registros exitosamente'}, 
+                          status=status.HTTP_200_OK)
+
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

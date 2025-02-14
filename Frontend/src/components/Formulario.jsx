@@ -15,6 +15,7 @@ import {
   FormControlLabel,
   Radio,
   Alert,
+  Button,
 } from '@mui/material';
 import LoadingDots from './Loading';
 import { Autocomplete } from '@mui/material';
@@ -22,9 +23,11 @@ import Header from './Header';
 import CheckIcon from '@mui/icons-material/Check';
 import '../styles/boton.css'
 import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
-
+import CargaMasiva from './CargaMasiva';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import '../styles/btn.css';
 const Formulario = () => {
-  const [skuOptions, setSkuOptions] = useState([]);
+  const [skuData, setSkuData] = useState([]); // Mantener los datos completos
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     tipo_notificacion: '',
@@ -45,6 +48,7 @@ const Formulario = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [openCargaMasiva, setOpenCargaMasiva] = useState(false);
   useEffect(() => {
     const loadSkuData = async () => {
       try {
@@ -61,7 +65,7 @@ const Formulario = () => {
           throw new Error(`Error al cargar SKU: ${response.status}`);
         }
         const data = await response.json();
-        setSkuOptions(data.skuOptions);
+        setSkuData(data.skuData); // Guardamos los datos completos
       } catch (error) {
         console.error('Error cargando SKU:', error);
       }
@@ -74,27 +78,23 @@ const Formulario = () => {
   };
 
   const handleValorChange = (value) => {
-    // Eliminar el símbolo % si está presente
-    const numericValue = value.replace('%', '');
-    setFormData({ ...formData, valor: numericValue });
+    // Eliminar cualquier caracter que no sea número, %, o coma
+    const cleanValue = value.replace(/[^\d%,]/g, '');
+    
+    // Si el valor termina en %, mantenerlo
+    const hasPercent = cleanValue.endsWith('%');
+    const numericValue = cleanValue.replace(/%$/, '');
+    
+    // Verificar si es un número válido (ahora permitiendo comas)
+    if (numericValue === '' || /^\d+,?\d*$/.test(numericValue)) {
+      setFormData({ ...formData, valor: hasPercent ? numericValue + '%' : numericValue });
+    }
   };
+
   const areaUnidades = {
-    "Abastecimiento": ["Armado de Cajas", "Bodega"],
-    "Administración": ["Administración"],
-    "Calidad": ["Aseguramiento de Calidad"],
-    "Congelado": ["Cambio de Embalaje", "Carton Freezer", "Congelado", "Paletizado"],
-    "Control de Producción": ["Control de Producción", "Informática", "Romana de Camiones"],
     "Cortes Especiales": ["Sala de Laminado", "Cortes Especiales", "Ecualizado", "Marinado", "Pimentado", "Porcionado"],
-    "Despacho": ["Despacho"],
     "Desposte": ["Calibrado Fresco", "Desposte", "Rectificado"],
-    "Faena": ["Butina", "Corrales", "Faena", "Lavado de Camiones"],
-    "General": ["Estatus Planta RO", "Planta Rosario", "Resumen Semanal", "Skyview"],
-    "Mantenimiento": ["Mantenimiento"],
-    "Personas": ["Personas", "SSO"],
-    "Producción": ["Cumplimiento de Producción"],
-    "Producción Animal": ["Producción Animal", "Torre Producción Animal"],
-    "Servicios": ["Servicios"],
-    "Torre de Control": ["Torre de Control"]
+    "Faena": ["Butina", "Corrales", "Faena", "Lavado de Camiones"]
   };
 
   const handleAreaChange = (value) => {
@@ -111,7 +111,6 @@ const Formulario = () => {
       'desviacion',
       'canal_comunicacion',
       'area',
-      'sku',
     ];
     for (const field of requiredFields) {
       if (!formData[field]) {
@@ -142,7 +141,7 @@ const Formulario = () => {
         formData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setSuccessMessage('Registro agregado correctamente');
+      setSuccessMessage('Registro guardado exitosamente');
   
       // Limpiar el formulario después de 3 segundos
       setTimeout(() => {
@@ -158,7 +157,6 @@ const Formulario = () => {
           hora_desviacion: '',
           respuesta: '',
           sku: '',  // Asegurarse de que el SKU se esté limpiando
-          producto: '',
           receptor: '',
           observaciones: '',
         });
@@ -180,9 +178,27 @@ const Formulario = () => {
     <>
     <Header />
     <Box className= "form-container">
-      <Typography variant="h5" gutterBottom>
-        Formulario de Registro <LibraryBooksIcon />
-      </Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <Typography variant="h5">
+          Formulario de Registro <LibraryBooksIcon />
+        </Typography>
+        <button className="button" onClick={() => setOpenCargaMasiva(true)}>
+          <span className="button_lg">
+            <span className="button_sl"></span>
+            <span className="button_text" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <CloudUploadIcon sx={{ marginRight: '8px' }} />
+              Carga Masiva
+            </span>
+          </span>
+        </button>
+      </Box>
+
+      <CargaMasiva
+        open={openCargaMasiva}
+        onClose={() => setOpenCargaMasiva(false)}
+        areaUnidades={areaUnidades}
+      />
+
       <form onSubmit={(e) => e.preventDefault()}>
         <Grid container spacing={3}>
           {/* Fila 1 */}
@@ -250,7 +266,7 @@ const Formulario = () => {
                 }}
               >
                 <MenuItem value="">Seleccionar...</MenuItem>
-                {['Correo', 'Presencial', 'Radio', 'Teléfono Fijo', 'WhatsApp'].map((option) => (
+                {['Correo', 'Microsoft Teams','Presencial', 'Radio', 'Teléfono Fijo', 'WhatsApp'].map((option) => (
                   <MenuItem key={option} value={option}>
                     {option}
                   </MenuItem>
@@ -283,24 +299,7 @@ const Formulario = () => {
                 
               >
                 <MenuItem value="">Seleccionar...</MenuItem>
-                {[
-                  'Abastecimiento',
-                  'Administración',
-                  'Calidad',
-                  'Congelado',
-                  'Control de Producción',
-                  'Cortes Especiales',
-                  'Despacho',
-                  'Desposte',
-                  'Faena',
-                  'General',
-                  'Mantenimiento',
-                  'Personas',
-                  'Producción',
-                  'Producción Animal',
-                  'Servicios',
-                  'Torre de Control',
-                ].map((option) => (
+                {Object.keys(areaUnidades).map((option) => (
                   <MenuItem key={option} value={option}>
                     {option}
                   </MenuItem>
@@ -310,11 +309,11 @@ const Formulario = () => {
           </Grid>
           <Grid item xs={12} sm={4}>
             <FormControl fullWidth disabled={!formData.area}>
-              <InputLabel>Unidad</InputLabel>
+              <InputLabel>Subárea</InputLabel>
               <Select
                 value={formData.unidad}
                 onChange={(e) => handleFieldChange('unidad', e.target.value)}
-                label="Unidad"
+                label="Subárea"
                 sx={{
                   borderRadius: '15px',
                   '& .MuiOutlinedInput-notchedOutline': {
@@ -369,9 +368,22 @@ const Formulario = () => {
           <Grid item xs={12} sm={4}>
             <TextField
               fullWidth
-              label="Valor %"
-              value={formData.valor ? `${formData.valor}%` : ''}
+              label="Valor Desviación"
+              value={formData.valor}
               onChange={(e) => handleValorChange(e.target.value)}
+              onBlur={() => {
+                // Al perder el foco, asegurarse de que tenga el símbolo %
+                if (formData.valor && !formData.valor.endsWith('%')) {
+                  setFormData({ 
+                    ...formData, 
+                    valor: `${formData.valor}%`
+                  });
+                }
+              }}
+              inputProps={{
+                inputMode: 'numeric',
+                pattern: '[0-9]*',
+              }}
               sx={{
                 '& .MuiOutlinedInput-root': {
                   '& fieldset': {
@@ -388,7 +400,6 @@ const Formulario = () => {
                   padding: '15px',
                 }
               }}
-              inputProps={{ inputMode: 'numeric' }}
             />
           </Grid>
           <Grid item xs={12} sm={4}>
@@ -441,9 +452,10 @@ const Formulario = () => {
             <FormControl fullWidth>
               
               <Autocomplete
-                options={skuOptions.slice(1)} // Omitir la primera opción vacía
-                getOptionLabel={(option) => option}
-                value={formData.sku && formData.producto ? `${formData.sku} - ${formData.producto}` : ''}
+                options={skuData.map(item => ({ 
+                  label: item.SKU, // Asegúrate que coincida con la columna del Excel
+                }))}
+                value={formData.sku ? { label: formData.sku, producto: formData.producto } : null}
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     '& fieldset': {
@@ -462,18 +474,16 @@ const Formulario = () => {
                 }}
                 onChange={(event, newValue) => {
                   if (newValue) {
-                    const [sku, producto] = newValue.split(' - ');
-                    handleFieldChange('sku', sku.trim());
-                    handleFieldChange('producto', producto.trim());
+                    handleFieldChange('sku', newValue.label);
                   } else {
                     handleFieldChange('sku', '');
-                    handleFieldChange('producto', '');
                   }
                 }}
+                getOptionLabel={(option) => option.label || ''}
                 renderInput={(params) => (
-                   <TextField {...params} 
-                      label="SKU" 
-                      placeholder='Buscar SKU...'
+                  <TextField {...params} 
+                    label="SKU" 
+                    placeholder='Buscar SKU...'
                   />
                 )}
               />

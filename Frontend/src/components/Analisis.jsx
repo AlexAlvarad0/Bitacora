@@ -1,242 +1,160 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import Header from './Header';
-import { 
-  Chart as ChartJS, 
-  CategoryScale, 
-  LinearScale, 
-  BarElement, 
-  ArcElement, 
-  Tooltip, 
-  Legend 
-} from 'chart.js';
-import { Bar, Pie } from 'react-chartjs-2';
-import moment from 'moment';
+import { DateRangePicker } from 'react-date-range';
+import { addDays } from 'date-fns';
 import {
-  Box,
-  Typography,
-  Button,
-  CircularProgress,
-} from '@mui/material';
-
-// Register Chart.js components
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  ArcElement,
-  Tooltip,
-  Legend
-);
+    BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
+    PieChart, Pie, Cell
+} from 'recharts';
+import 'react-date-range/dist/styles.css';
+import 'react-date-range/dist/theme/default.css';
+import axios from 'axios';
+import moment from 'moment';
 
 const Analisis = () => {
-  const navigate = useNavigate();
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  // Mapping of areas to management, similar to Streamlit script
-  const AREAS_POR_GERENCIA = {
-    "Administración": [
-      "Abastecimiento", "Administración", 
-      "Control de Producción", "Servicios", 
-      "Torre de Control"
-    ],
-    "Calidad": ["Calidad"],
-    "Despacho": ["Despacho"],
-    "Gerencia Planta": ["General"],
-    "Mantenimiento": ["Mantenimiento"],
-    "Personas": ["Personas"],
-    "Producción": [
-      "Congelado", "Cortes Especiales", 
-      "Desposte", "Faena", "Producción"
-    ],
-    "Producción Animal": ["Producción Animal"]
-  };
-
-  // Mapping of areas to management, flattened for easy lookup
-  const AREA_A_GERENCIA = Object.fromEntries(
-    Object.entries(AREAS_POR_GERENCIA).flatMap(([gerencia, areas]) => 
-      areas.map(area => [area, gerencia])
-    )
-  );
-
-  // Fetch data from backend
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      const token = localStorage.getItem('token');
-      if (!token) {
-        navigate('/');
-        return;
-      }
-  
-      try {
-        const response = await axios.get('http://127.0.0.1:8000/api/bitacora/', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-  
-        const apiData = response.data.data || response.data;
-        const processedData = apiData.map(item => ({
-          ...item,
-          'Fecha y Hora': new Date(item['Fecha y Hora']),
-          // Add checks to replace problematic float values
-          ...Object.fromEntries(
-            Object.entries(item).map(([key, value]) => [
-              key, 
-              (typeof value === 'number' && (isNaN(value) || !isFinite(value))) 
-                ? null 
-                : value
-            ])
-          )
-        }));
-  
-        console.log("Processed Data:", processedData); // Verifica los datos recibidos
-
-        setData(processedData);
-      } catch (error) {
-        if (error.response && error.response.status === 401) {
-          // Token is invalid, clear it and redirect to login
-          localStorage.removeItem('token');
-          navigate('/');
-          return;
+    const [bitacoraData, setBitacoraData] = useState([]);
+    const [dateRange, setDateRange] = useState([
+        {
+            startDate: addDays(new Date(), -7),  // Initialize to last 7 days
+            endDate: new Date(),
+            key: 'selection'
         }
-        throw error;
-      }
-    } catch (error) {
-      setError(error.response?.data?.error || error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+    ]);
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  // Filter data for last 7 days
-  const getLast7DaysData = () => {
-    const sevenDaysAgo = moment().subtract(7, 'days').startOf('day').toDate();
-    return data.filter(row => row['Fecha y Hora'] >= sevenDaysAgo);
-  };
-
-  // Prepare Bar Chart Data for D3 and D4 Deviations
-  const getBarChartData = () => {
-    const last7DaysData = getLast7DaysData();
-    const d3d4Deviations = last7DaysData.filter(row => ['D3', 'D4'].includes(row['Desviación']));
-    
-    const deviationCounts = d3d4Deviations.reduce((acc, row) => {
-      acc[row['Desviación']] = (acc[row['Desviación']] || 0) + 1;
-      return acc;
-    }, {});
-  
-    // Ensure both D3 and D4 are represented, even if count is 0
-    if (!deviationCounts['D3']) deviationCounts['D3'] = 0;
-    if (!deviationCounts['D4']) deviationCounts['D4'] = 0;
-  
-    return {
-      labels: ['D3', 'D4'],
-      datasets: [{
-        label: 'Cantidad de Desviaciones',
-        data: [deviationCounts['D3'], deviationCounts['D4']],
-        backgroundColor: ['#FFA500', '#FF0000']
-      }]
+    const fetchData = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await axios.get('http://localhost:8000/api/bitacora/', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setBitacoraData(response.data.data);
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
     };
-  };
 
-  // Prepare Pie Chart Data for Deviations by Management
-  const getPieChartData = () => {
-    const last7DaysData = getLast7DaysData();
-    
-    // Map areas to management
-    const deviationsByGerencia = last7DaysData.reduce((acc, row) => {
-      const gerencia = AREA_A_GERENCIA[row['Área']] || 'Otros';
-      acc[gerencia] = (acc[gerencia] || 0) + 1;
-      return acc;
-    }, {});
-  
-    return {
-      labels: Object.keys(deviationsByGerencia),
-      datasets: [{
-        data: Object.values(deviationsByGerencia),
-        backgroundColor: [
-          '#FF6384', '#36A2EB', '#FFCE56', 
-          '#4BC0C0', '#9966FF', '#FF9F40'
-        ]
-      }]
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const filteredData = bitacoraData.filter(item => {
+        const itemDate = moment(item['Fecha y Hora'], 'DD-MM-YYYY HH:mm:ss');
+        return itemDate.isBetween(
+            moment(dateRange[0].startDate).startOf('day'),
+            moment(dateRange[0].endDate).endOf('day'),
+            'day',
+            '[]'
+        );
+    });
+
+    const getDeviationCountsByDay = () => {
+        const counts = {};
+        filteredData.forEach(item => {
+            const date = item['Fecha y Hora'].split(' ')[0];
+            if (!counts[date]) {
+                counts[date] = { D1: 0, D2: 0, D3: 0, D4: 0 };
+            }
+            counts[date][item.Desviación]++;
+        });
+        return counts;
     };
-  };
 
-  // Refresh data handler
-  const handleRefresh = () => {
-    fetchData();
-  };
+    const getDeviationCountsByArea = () => {
+        const counts = {};
+        filteredData.forEach(item => {
+            if (!counts[item.Área]) {
+                counts[item.Área] = 0;
+            }
+            counts[item.Área]++;
+        });
+        return counts;
+    };
 
-  return (
-    <>
-      <Header />
-      <Box sx={{ padding: '20px' }}>
-        <Typography variant="h4" gutterBottom>
-          Análisis de Desviaciones
-        </Typography>
+    const prepareBarChartData = () => {
+        const data = [];
+        Object.entries(getDeviationCountsByDay()).forEach(([date, counts]) => {
+            data.push({
+                fecha: date,
+                D1: counts.D1,
+                D2: counts.D2,
+                D3: counts.D3,
+                D4: counts.D4
+            });
+        });
+        return data;
+    };
 
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleRefresh}
-          disabled={loading}
-          sx={{ marginBottom: '20px' }}
-        >
-          {loading ? <CircularProgress size={24} /> : 'Actualizar Datos'}
-        </Button>
+    const preparePieChartData = () => {
+        return Object.entries(getDeviationCountsByArea()).map(([area, count]) => ({
+            name: area,
+            value: count
+        }));
+    };
 
-        {error && (
-          <Typography color="error" sx={{ marginBottom: '20px' }}>
-            {error}
-          </Typography>
-        )}
+    const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
 
-        {!loading && data.length === 0 ? (
-          <Typography color="text.secondary">
-            No hay datos disponibles
-          </Typography>
-        ) : (
-          <>
-            <Box sx={{ marginBottom: '40px' }}>
-              <Typography variant="h6">Desviaciones D3 y D4 (últimos 7 días)</Typography>
-              <Bar 
-                data={getBarChartData()} 
-                options={{ 
-                  responsive: true,
-                  plugins: {
-                    legend: { display: true },
-                  },
-                }} 
-              />
-            </Box>
+    return (
+        <div className="container mx-auto p-4">
+            <h1 className="text-2xl font-bold text-center mb-6">Análisis de Desviaciones</h1>
+            
+            <div className="mb-8">
+                <h2 className="text-xl font-bold mb-4">Seleccione el rango de fechas</h2>
+                <DateRangePicker
+                    onChange={item => setDateRange([item.selection])}
+                    ranges={dateRange}
+                />
+            </div>
 
-            <Box>
-              <Typography variant="h6">
-                Desviaciones Agrupadas por Gerencia (últimos 7 días)
-              </Typography>
-              <Pie 
-                data={getPieChartData()} 
-                options={{ 
-                  responsive: true,
-                  plugins: {
-                    legend: { display: true },
-                  },
-                }} 
-              />
-            </Box>
-          </>
-        )}
-      </Box>
-    </>
-  );
+            <div className="grid grid-cols-1 gap-8">
+                <div className="bg-white p-4 rounded-lg shadow">
+                    <h3 className="text-lg font-semibold mb-4">Desviaciones por Día</h3>
+                    <div style={{ width: '100%', height: 400 }}>
+                        <ResponsiveContainer>
+                            <BarChart
+                                data={prepareBarChartData()}
+                                margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                            >
+                                <CartesianGrid strokeDasharray="3 3" />
+                                <XAxis dataKey="fecha" />
+                                <YAxis />
+                                <Tooltip />
+                                <Legend />
+                                <Bar dataKey="D1" fill="#C6EFCE" name="D1" />
+                                <Bar dataKey="D2" fill="#FFEB9C" name="D2" />
+                                <Bar dataKey="D3" fill="#FFA500" name="D3" />
+                                <Bar dataKey="D4" fill="#FF0000" name="D4" />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+
+                <div className="bg-white p-4 rounded-lg shadow">
+                    <h3 className="text-lg font-semibold mb-4">Desviaciones por Área</h3>
+                    <div style={{ width: '100%', height: 400 }}>
+                        <ResponsiveContainer>
+                            <PieChart>
+                                <Pie
+                                    data={preparePieChartData()}
+                                    cx="50%"
+                                    cy="50%"
+                                    labelLine={true}
+                                    label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                                    outerRadius={150}
+                                    fill="#8884d8"
+                                    dataKey="value"
+                                >
+                                    {preparePieChartData().map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                    ))}
+                                </Pie>
+                                <Tooltip />
+                                <Legend />
+                            </PieChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
 };
 
 export default Analisis;
