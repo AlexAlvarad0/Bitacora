@@ -374,3 +374,53 @@ class CargaMasivaView(APIView):
 
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class ExcelDataView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        try:
+            # SharePoint configuration
+            sharepoint_url = "https://agrosuper.sharepoint.com/sites/PanelPlantaRosario"
+            folder_path = "/sites/PanelPlantaRosario/Documentos compartidos/1.- Torre de Control/1.- Gestión TC/2- Registro Bitácora TC (interfaz web)"
+            archivo_excel = 'Bitácora TC.xlsx'
+
+            # Initialize SharePoint context
+            ctx = ClientContext(sharepoint_url).with_credentials(
+                UserCredential('aialvarado@agrosuper.com', 'Produccion2025.')
+            )
+
+            # Get file from SharePoint
+            response = ctx.web.get_file_by_server_relative_url(folder_path + "/" + archivo_excel).execute_query()
+            file_content = io.BytesIO()
+            response.download(file_content).execute_query()
+            file_content.seek(0)
+
+            # Read Excel file
+            df = pd.read_excel(file_content)
+            
+            # Convert datetime columns to string format
+            for col in df.columns:
+                if pd.api.types.is_datetime64_any_dtype(df[col]):
+                    df[col] = df[col].dt.strftime('%d-%m-%Y %H:%M:%S')
+
+            # Handle NaN values
+            df = df.fillna('')
+
+            # Convert to list of dictionaries with row IDs
+            data = [
+                {**row, 'id': idx} 
+                for idx, row in enumerate(df.to_dict('records'))
+            ]
+
+            return Response({
+                'status': 'success',
+                'data': data,
+                'columns': list(df.columns)
+            }, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({
+                'status': 'error',
+                'message': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

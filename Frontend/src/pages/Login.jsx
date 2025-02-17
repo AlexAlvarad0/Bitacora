@@ -7,10 +7,12 @@ import '../styles/botoninisesion.css';
 import '../styles/fonts.css';
 import LockIcon from '@mui/icons-material/Lock';
 import PersonIcon from '@mui/icons-material/Person';
+import { Snackbar, Alert } from '@mui/material';
 
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [openError, setOpenError] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = async () => {
@@ -21,7 +23,21 @@ const Login = () => {
       navigate('/formulario');
     } catch (error) {
       console.error('Error logging in', error);
-      alert('Credenciales incorrectas');
+      setOpenError(true);
+
+    }
+  };
+
+  const handleCloseError = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setOpenError(false);
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleLogin();
     }
   };
 
@@ -41,7 +57,7 @@ const Login = () => {
               placeholder="Nombre de usuario"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-            
+              onKeyPress={handleKeyPress}
             />
           </div>
           
@@ -52,6 +68,7 @@ const Login = () => {
               placeholder="Contraseña"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              onKeyPress={handleKeyPress}
             />
           </div>
           
@@ -73,6 +90,11 @@ const Login = () => {
           style={{ width: '15vw', height: 'auto' }} />
         </div>
       </div>
+      <Snackbar open={openError} autoHideDuration={6000} onClose={handleCloseError}>
+        <Alert onClose={handleCloseError} severity="error" sx={{ width: '100%' }}>
+          Credenciales incorrectas
+        </Alert>
+      </Snackbar>
     </div>
   );
 };

@@ -123,8 +123,8 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
+SESSION_COOKIE_AGE = 86400  # 1 day in seconds
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),  # Adjust as needed
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=1440),  # Adjust as needed
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
 }

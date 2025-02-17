@@ -28,6 +28,7 @@ import CargaMasiva from './CargaMasiva';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import '../styles/btn.css';
 import Layout from './Layout';
+import Snackbar from '@mui/material/Snackbar';
 
 const Formulario = () => {
   const [skuData, setSkuData] = useState([]); // Mantener los datos completos
@@ -52,6 +53,7 @@ const Formulario = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [openCargaMasiva, setOpenCargaMasiva] = useState(false);
+  const [popupMessage, setPopupMessage] = useState({ open: false, message: '', type: 'success' });
   useEffect(() => {
     const loadSkuData = async () => {
       try {
@@ -81,16 +83,11 @@ const Formulario = () => {
   };
 
   const handleValorChange = (value) => {
-    // Eliminar cualquier caracter que no sea número, %, o coma
+    // Permitir solo números, coma y %
     const cleanValue = value.replace(/[^\d%,]/g, '');
-    
-    // Si el valor termina en %, mantenerlo
-    const hasPercent = cleanValue.endsWith('%');
-    const numericValue = cleanValue.replace(/%$/, '');
-    
-    // Verificar si es un número válido (ahora permitiendo comas)
-    if (numericValue === '' || /^\d+,?\d*$/.test(numericValue)) {
-      setFormData({ ...formData, valor: hasPercent ? numericValue + '%' : numericValue });
+    // Si es un número válido (permitiendo comas y %)
+    if (cleanValue === '' || /^\d+,?\d*%?$/.test(cleanValue)) {
+      setFormData({ ...formData, valor: cleanValue });
     }
   };
 
@@ -129,10 +126,13 @@ const Formulario = () => {
     if (!validateForm()) return; // Validar campos antes de enviar
   
     setIsLoading(true);
-    setSuccessMessage('');
     const token = localStorage.getItem('token');
     if (!token) {
-      alert('No estás autenticado. Por favor, inicia sesión.');
+      setPopupMessage({
+        open: true,
+        message: 'No estás autenticado. Por favor, inicia sesión.',
+        type: 'error'
+      });
       navigate('/');
       setIsLoading(false);
       return;
@@ -144,9 +144,14 @@ const Formulario = () => {
         formData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setSuccessMessage('Registro guardado exitosamente');
+      
+      setPopupMessage({
+        open: true,
+        message: 'Registro guardado exitosamente',
+        type: 'success'
+      });
   
-      // Limpiar el formulario después de 3 segundos
+      // Limpiar el formulario después del éxito
       setTimeout(() => {
         setFormData({
           tipo_notificacion: '',
@@ -159,16 +164,20 @@ const Formulario = () => {
           valor: '',
           hora_desviacion: '',
           respuesta: '',
-          sku: '',  // Asegurarse de que el SKU se esté limpiando
+          sku: '',
+          producto: '',
           receptor: '',
           observaciones: '',
         });
-        setSuccessMessage('');
       }, 3000);
     } catch (error) {
       console.error('Error enviando formulario', error);
-      if (error.response && error.response.status === 401) {
-        alert('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.');
+      setPopupMessage({
+        open: true,
+        message: 'El registro no fue enviado, asegúrese que la bitácora no esté abierta',
+        type: 'error'
+      });
+      if (error.response?.status === 401) {
         localStorage.removeItem('token');
         navigate('/');
       }
@@ -461,9 +470,10 @@ const Formulario = () => {
                 
                 <Autocomplete
                   options={skuData.map(item => ({ 
-                    label: item.SKU, // Asegúrate que coincida con la columna del Excel
+                    label: `${item.SKU} - ${item.Producto}`,
+                    sku: item.SKU
                   }))}
-                  value={formData.sku ? { label: formData.sku, producto: formData.producto } : null}
+                  value={formData.sku ? { label: `${formData.sku} - ${formData.producto}`, sku: formData.sku } : null}
                   sx={{
                     '& .MuiOutlinedInput-root': {
                       '& fieldset': {
@@ -482,7 +492,7 @@ const Formulario = () => {
                   }}
                   onChange={(event, newValue) => {
                     if (newValue) {
-                      handleFieldChange('sku', newValue.label);
+                      handleFieldChange('sku', newValue.sku);
                     } else {
                       handleFieldChange('sku', '');
                     }
@@ -574,6 +584,20 @@ const Formulario = () => {
           )}
         </form>
       </Paper>
+      <Snackbar
+        open={popupMessage.open}
+        autoHideDuration={4000}
+        onClose={() => setPopupMessage({ ...popupMessage, open: false })}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={() => setPopupMessage({ ...popupMessage, open: false })} 
+          severity={popupMessage.type} 
+          sx={{ width: '100%' }}
+        >
+          {popupMessage.message}
+        </Alert>
+      </Snackbar>
     </Layout>
   );
 };
