@@ -1,0 +1,70 @@
+/* Archivo: src/styles/sidebar.css */
+
+/* Estilos principales para el sidebar */
+.sidebar-wrapper .pro-sidebar {
+    height: 100vh;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Personalización de colores */
+  .sidebar-wrapper .pro-sidebar {
+    background-color: #f8f9fa;
+  }
+  
+  .sidebar-wrapper .pro-sidebar .pro-menu {
+    padding-top: 20px;
+  }
+  
+  /* Estilos de ítems del menú */
+  .sidebar-wrapper .pro-sidebar .pro-menu .pro-menu-item {
+    font-family: 'Gotham-Medium', sans-serif;
+  }
+  
+  .sidebar-wrapper .pro-sidebar .pro-menu .pro-menu-item.active {
+    background-color: rgba(0, 48, 135, 0.1);
+  }
+  
+  .sidebar-wrapper .pro-sidebar .pro-menu .pro-menu-item:hover {
+    background-color: rgba(0, 48, 135, 0.05);
+  }
+  
+  /* Estilos para íconos */
+  .sidebar-wrapper .pro-sidebar .pro-menu .pro-menu-item .pro-icon-wrapper .pro-icon {
+    color: #003087;
+  }
+  
+  /* Estilos para la transición */
+  .sidebar-wrapper .pro-sidebar .pro-sidebar-inner {
+    transition: width 0.3s ease;
+  }
+  
+  /* Ajuste para el contenido principal */
+  .main-content {
+    margin-left: 80px;
+    transition: margin-left 0.3s ease;
+  }
+  
+  .main-content.sidebar-expanded {
+    margin-left: 250px;
+  }
+  
+  /* Estilos para el header dentro del sidebar */
+  .sidebar-wrapper .pro-sidebar .pro-sidebar-header {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Estilos para el footer dentro del sidebar */
+  .sidebar-wrapper .pro-sidebar .pro-sidebar-footer {
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Estilos específicos para el modo colapsado */
+  .sidebar-wrapper .pro-sidebar.collapsed .pro-menu-item {
+    padding: 5px;
+  }
+  
+  .sidebar-wrapper .pro-sidebar.collapsed .pro-menu > ul > .pro-menu-item.pro-sub-menu > .pro-inner-list-item {
+    position: relative;
+    background-color: #f8f9fa;
+    z-index: 1000;
+  }

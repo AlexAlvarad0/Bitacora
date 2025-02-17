@@ -192,37 +192,70 @@ class UserProfileView(APIView):
 
 class BitacoraDataView(APIView):
     permission_classes = [IsAuthenticated]
-
     def get(self, request):
         try:
             # Configurar SharePoint
             sharepoint_url = "https://agrosuper.sharepoint.com/sites/PanelPlantaRosario"
             folder_path = "/sites/PanelPlantaRosario/Documentos compartidos/1.- Torre de Control/1.- Gestión TC/2- Registro Bitácora TC (interfaz web)"
             archivo_excel = 'Bitácora TC.xlsx'
-
             ctx = ClientContext(sharepoint_url).with_credentials(
                 UserCredential('aialvarado@agrosuper.com', 'Produccion2025.')
             )
-
             # Leer el archivo existente desde SharePoint
             response = ctx.web.get_file_by_server_relative_url(folder_path + "/" + archivo_excel).execute_query()
             file_content = io.BytesIO()
             response.download(file_content).execute_query()
             file_content.seek(0)
-
+            
             # Leer el archivo Excel
             df = pd.read_excel(file_content)
-
+            
+            # Validar que existan las columnas requeridas
+            required_columns = ['Fecha y Hora', 'Desviación', 'Área']
+            missing_columns = [col for col in required_columns if col not in df.columns]
+            if missing_columns:
+                return Response(
+                    {'error': f'Faltan columnas requeridas: {", ".join(missing_columns)}'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
             # Convertir columna de fecha al formato específico
-            df['Fecha y Hora'] = pd.to_datetime(df['Fecha y Hora'], format='%d-%m-%Y %H:%M:%S').dt.strftime('%d-%m-%Y %H:%M:%S')
-
+            df['Fecha y Hora'] = pd.to_datetime(
+                df['Fecha y Hora'], 
+                format='%d-%m-%Y %H:%M:%S', 
+                errors='coerce'
+            ).dt.strftime('%d-%m-%Y %H:%M:%S')
+            
+            # Eliminar filas con fechas inválidas
+            df = df.dropna(subset=['Fecha y Hora'])
+            
+            # Normalizar valores de desviación (asegurar que sean D1, D2, D3, D4)
+            valid_desviations = ['D1', 'D2', 'D3', 'D4']
+            df['Desviación'] = df['Desviación'].apply(
+                lambda x: x.strip() if isinstance(x, str) and x.strip() in valid_desviations else None
+            )
+            
             # Limpiar datos y manejar valores NaN
             df = df.fillna('')
         
             # Convertir DataFrame a lista de diccionarios
             data = df.to_dict(orient='records')
-
-            return Response({'data': data}, status=status.HTTP_200_OK)
+            
+            # Agregar estadísticas básicas
+            stats = {
+                'total_registros': len(data),
+                'total_desviaciones': len([r for r in data if r['Desviación'] in valid_desviations]),
+                'conteo_por_desviacion': {
+                    desv: len([r for r in data if r['Desviación'] == desv])
+                    for desv in valid_desviations
+                }
+            }
+            
+            return Response({
+                'data': data,
+                'stats': stats
+            }, status=status.HTTP_200_OK)
+            
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 

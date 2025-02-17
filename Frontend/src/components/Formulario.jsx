@@ -16,6 +16,7 @@ import {
   Radio,
   Alert,
   Button,
+  Paper
 } from '@mui/material';
 import LoadingDots from './Loading';
 import { Autocomplete } from '@mui/material';
@@ -26,6 +27,8 @@ import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
 import CargaMasiva from './CargaMasiva';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import '../styles/btn.css';
+import Layout from './Layout';
+
 const Formulario = () => {
   const [skuData, setSkuData] = useState([]); // Mantener los datos completos
   const navigate = useNavigate();
@@ -175,287 +178,183 @@ const Formulario = () => {
   };
 
   return (
-    <>
-    <Header />
-    <Box className= "form-container">
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Typography variant="h5">
-          Formulario de Registro <LibraryBooksIcon />
-        </Typography>
-        <button className="button" onClick={() => setOpenCargaMasiva(true)}>
-          <span className="button_lg">
-            <span className="button_sl"></span>
-            <span className="button_text" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <CloudUploadIcon sx={{ marginRight: '8px' }} />
-              Carga Masiva
+    <Layout>
+      <Paper>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+          <Typography 
+            variant="h5" 
+            sx={{ 
+              fontFamily: 'Gotham-Bold, sans-serif',
+              color: '#003087'
+            }}
+          >
+            Formulario de Registro
+          </Typography>
+          <button className="button" onClick={() => setOpenCargaMasiva(true)}>
+            <span className="button_lg">
+              <span className="button_sl"></span>
+              <span className="button_text" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <CloudUploadIcon sx={{ marginRight: '8px' }} />
+                Carga Masiva
+              </span>
             </span>
-          </span>
-        </button>
-      </Box>
+          </button>
+        </Box>
 
-      <CargaMasiva
-        open={openCargaMasiva}
-        onClose={() => setOpenCargaMasiva(false)}
-        areaUnidades={areaUnidades}
-      />
+        <CargaMasiva
+          open={openCargaMasiva}
+          onClose={() => setOpenCargaMasiva(false)}
+          areaUnidades={areaUnidades}
+        />
 
-      <form onSubmit={(e) => e.preventDefault()}>
-        <Grid container spacing={3}>
-          {/* Fila 1 */}
-          <Grid item xs={12} sm={4}>
-            <Typography variant="subtitle1" color=' #003087'>Tipo de Notificación</Typography>
-            <RadioGroup
-              row
-              value={formData.tipo_notificacion}
-              onChange={(e) => handleFieldChange('tipo_notificacion', e.target.value)}
-              color='success'
-            >
-              {['Alerta', 'Aviso', 'Información'].map((option) => (
-                <FormControlLabel key={option} value={option} control={<Radio />} label={option}  />
-              ))}
-            </RadioGroup>
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <Typography variant="subtitle1" color=' #003087'>Sentido</Typography>
-            <RadioGroup
-              row
-              value={formData.sentido}
-              onChange={(e) => handleFieldChange('sentido', e.target.value)}
-            >
-              {['Envío', 'Recepción'].map((option) => (
-                <FormControlLabel key={option} value={option} control={<Radio />} label={option} />
-              ))}
-            </RadioGroup>
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <Typography variant="subtitle1"color=' #003087'>Desviación</Typography>
-            <RadioGroup
-              row
-              value={formData.desviacion}
-              onChange={(e) => handleFieldChange('desviacion', e.target.value)}
-              
-            >
-              {['D1', 'D2', 'D3', 'D4'].map((option) => (
-                <FormControlLabel key={option} value={option} control={<Radio />} label={option} />
-              ))}
-            </RadioGroup>
-          </Grid>
-
-          {/* Fila 2 */}
-          <Grid item xs={12} sm={4}>
-            <FormControl fullWidth>
-              <InputLabel>Canal de Comunicación</InputLabel>
-              <Select
-                value={formData.canal_comunicacion}
-                onChange={(e) => handleFieldChange('canal_comunicacion', e.target.value)}
-                label="Canal de Comunicación"
-                sx={{
-                  borderRadius: '15px',
-                  '& .MuiOutlinedInput-notchedOutline': {
-                    border: '2px solid #e8e8e8',
-                  },
-                  '&:hover .MuiOutlinedInput-notchedOutline': {
-                    borderColor: '#0077ff',
-                  },
-                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                    borderColor: '#0095ff',
-                  },
-                  '& .MuiSelect-select': {
-                    padding: '15px',
-                  }
-                }}
+        <form onSubmit={(e) => e.preventDefault()}>
+          <Grid container spacing={3}>
+            {/* Fila 1 */}
+            <Grid item xs={12} sm={4}>
+              <Typography variant="subtitle1" color=' #003087'>Tipo de Notificación</Typography>
+              <RadioGroup
+                row
+                value={formData.tipo_notificacion}
+                onChange={(e) => handleFieldChange('tipo_notificacion', e.target.value)}
+                color='success'
               >
-                <MenuItem value="">Seleccionar...</MenuItem>
-                {['Correo', 'Microsoft Teams','Presencial', 'Radio', 'Teléfono Fijo', 'WhatsApp'].map((option) => (
-                  <MenuItem key={option} value={option}>
-                    {option}
-                  </MenuItem>
+                {['Alerta', 'Aviso', 'Información'].map((option) => (
+                  <FormControlLabel key={option} value={option} control={<Radio />} label={option}  />
                 ))}
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <FormControl fullWidth>
-              <InputLabel>Área</InputLabel>
-              <Select
-                value={formData.area}
-                onChange={(e) => handleFieldChange('area', e.target.value)}
-                sx={{
-                  borderRadius: '15px',
-                  '& .MuiOutlinedInput-notchedOutline': {
-                    border: '2px solid #e8e8e8',
-                  },
-                  '&:hover .MuiOutlinedInput-notchedOutline': {
-                    borderColor: '#0077ff',
-                  },
-                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                    borderColor: '#0095ff',
-                  },
-                  '& .MuiSelect-select': {
-                    padding: '15px',
-                  }
-                }}
-                label="Área"
+              </RadioGroup>
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <Typography variant="subtitle1" color=' #003087'>Sentido</Typography>
+              <RadioGroup
+                row
+                value={formData.sentido}
+                onChange={(e) => handleFieldChange('sentido', e.target.value)}
+              >
+                {['Envío', 'Recepción'].map((option) => (
+                  <FormControlLabel key={option} value={option} control={<Radio />} label={option} />
+                ))}
+              </RadioGroup>
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <Typography variant="subtitle1"color=' #003087'>Desviación</Typography>
+              <RadioGroup
+                row
+                value={formData.desviacion}
+                onChange={(e) => handleFieldChange('desviacion', e.target.value)}
                 
               >
-                <MenuItem value="">Seleccionar...</MenuItem>
-                {Object.keys(areaUnidades).map((option) => (
-                  <MenuItem key={option} value={option}>
-                    {option}
-                  </MenuItem>
+                {['D1', 'D2', 'D3', 'D4'].map((option) => (
+                  <FormControlLabel key={option} value={option} control={<Radio />} label={option} />
                 ))}
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <FormControl fullWidth disabled={!formData.area}>
-              <InputLabel>Subárea</InputLabel>
-              <Select
-                value={formData.unidad}
-                onChange={(e) => handleFieldChange('unidad', e.target.value)}
-                label="Subárea"
-                sx={{
-                  borderRadius: '15px',
-                  '& .MuiOutlinedInput-notchedOutline': {
-                    border: '2px solid #e8e8e8',
-                  },
-                  '&:hover .MuiOutlinedInput-notchedOutline': {
-                    borderColor: '#0077ff',
-                  },
-                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                    borderColor: '#0095ff',
-                  },
-                  '& .MuiSelect-select': {
-                    padding: '15px',
-                  }
-                }}
-              >
-                <MenuItem value="">Seleccionar...</MenuItem>
-                  {formData.area && areaUnidades[formData.area].map((option) => (
+              </RadioGroup>
+            </Grid>
+
+            {/* Fila 2 */}
+            <Grid item xs={12} sm={4}>
+              <FormControl fullWidth>
+                <InputLabel>Canal de Comunicación</InputLabel>
+                <Select
+                  value={formData.canal_comunicacion}
+                  onChange={(e) => handleFieldChange('canal_comunicacion', e.target.value)}
+                  label="Canal de Comunicación"
+                  sx={{
+                    borderRadius: '15px',
+                    '& .MuiOutlinedInput-notchedOutline': {
+                      border: '2px solid #e8e8e8',
+                    },
+                    '&:hover .MuiOutlinedInput-notchedOutline': {
+                      borderColor: '#0077ff',
+                    },
+                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                      borderColor: '#0095ff',
+                    },
+                    '& .MuiSelect-select': {
+                      padding: '15px',
+                    }
+                  }}
+                >
+                  <MenuItem value="">Seleccionar...</MenuItem>
+                  {['Correo', 'Microsoft Teams','Presencial', 'Radio', 'Teléfono Fijo', 'WhatsApp'].map((option) => (
                     <MenuItem key={option} value={option}>
                       {option}
                     </MenuItem>
                   ))}
-              </Select>
-            </FormControl>
-          </Grid>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <FormControl fullWidth>
+                <InputLabel>Área</InputLabel>
+                <Select
+                  value={formData.area}
+                  onChange={(e) => handleFieldChange('area', e.target.value)}
+                  sx={{
+                    borderRadius: '15px',
+                    '& .MuiOutlinedInput-notchedOutline': {
+                      border: '2px solid #e8e8e8',
+                    },
+                    '&:hover .MuiOutlinedInput-notchedOutline': {
+                      borderColor: '#0077ff',
+                    },
+                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                      borderColor: '#0095ff',
+                    },
+                    '& .MuiSelect-select': {
+                      padding: '15px',
+                    }
+                  }}
+                  label="Área"
+                  
+                >
+                  <MenuItem value="">Seleccionar...</MenuItem>
+                  {Object.keys(areaUnidades).map((option) => (
+                    <MenuItem key={option} value={option}>
+                      {option}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <FormControl fullWidth disabled={!formData.area}>
+                <InputLabel>Subárea</InputLabel>
+                <Select
+                  value={formData.unidad}
+                  onChange={(e) => handleFieldChange('unidad', e.target.value)}
+                  label="Subárea"
+                  sx={{
+                    borderRadius: '15px',
+                    '& .MuiOutlinedInput-notchedOutline': {
+                      border: '2px solid #e8e8e8',
+                    },
+                    '&:hover .MuiOutlinedInput-notchedOutline': {
+                      borderColor: '#0077ff',
+                    },
+                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                      borderColor: '#0095ff',
+                    },
+                    '& .MuiSelect-select': {
+                      padding: '15px',
+                    }
+                  }}
+                >
+                  <MenuItem value="">Seleccionar...</MenuItem>
+                    {formData.area && areaUnidades[formData.area].map((option) => (
+                      <MenuItem key={option} value={option}>
+                        {option}
+                      </MenuItem>
+                    ))}
+                </Select>
+              </FormControl>
+            </Grid>
 
-          {/* Fila 3 */}
-          <Grid item xs={12} sm={4}>
-            <TextField
-              fullWidth
-              label="Indicador"
-              value={formData.indicador}
-              onChange={(e) => handleFieldChange('indicador', e.target.value)}
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  '& fieldset': {
-                    borderRadius: '15px',
-                  },
-                  '&:hover fieldset': {
-                    borderColor: '#0077ff',
-                  },
-                  '&.Mui-focused fieldset': {
-                    borderColor: '#0095ff',
-                  },
-                },
-                '& .MuiInputBase-input': {
-                  padding: '15px',
-                }
-              }}
-            />
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <TextField
-              fullWidth
-              label="Valor Desviación"
-              value={formData.valor}
-              onChange={(e) => handleValorChange(e.target.value)}
-              onBlur={() => {
-                // Al perder el foco, asegurarse de que tenga el símbolo %
-                if (formData.valor && !formData.valor.endsWith('%')) {
-                  setFormData({ 
-                    ...formData, 
-                    valor: `${formData.valor}%`
-                  });
-                }
-              }}
-              inputProps={{
-                inputMode: 'numeric',
-                pattern: '[0-9]*',
-              }}
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  '& fieldset': {
-                    borderRadius: '15px',
-                  },
-                  '&:hover fieldset': {
-                    borderColor: '#0077ff',
-                  },
-                  '&.Mui-focused fieldset': {
-                    borderColor: '#0095ff',
-                  },
-                },
-                '& .MuiInputBase-input': {
-                  padding: '15px',
-                }
-              }}
-            />
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <TextField
-              fullWidth
-              label="Hora de Desviación"
-              type="time" // Usamos el tipo "time" para el selector de hora
-              value={formData.hora_desviacion}
-              onChange={(e) => handleFieldChange('hora_desviacion', e.target.value)}
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  '& fieldset': {
-                    borderRadius: '15px',
-                  },
-                  '&:hover fieldset': {
-                    borderColor: '#0077ff',
-                  },
-                  '&.Mui-focused fieldset': {
-                    borderColor: '#0095ff',
-                  },
-                },
-                '& .MuiInputBase-input': {
-                  padding: '15px',
-                }
-              }}
-              InputLabelProps={{
-                shrink: true, // Asegura que la etiqueta no se superponga al valor
-              }}
-              inputProps={{
-                step: 300,
-               // Incremento en segundos (5 minutos)
-              }}
-            />
-          </Grid>
-
-          {/* Fila 4 */}
-          <Grid item xs={12} sm={4}>
-            <Typography variant="subtitle1" color=' #003087'>Respuesta</Typography>
-            <RadioGroup
-              row
-              value={formData.respuesta}
-              onChange={(e) => handleFieldChange('respuesta', e.target.value)}
-            >
-              {['Sí', 'No'].map((option) => (
-                <FormControlLabel key={option} value={option} control={<Radio />} label={option} />
-              ))}
-            </RadioGroup>
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <FormControl fullWidth>
-              
-              <Autocomplete
-                options={skuData.map(item => ({ 
-                  label: item.SKU, // Asegúrate que coincida con la columna del Excel
-                }))}
-                value={formData.sku ? { label: formData.sku, producto: formData.producto } : null}
+            {/* Fila 3 */}
+            <Grid item xs={12} sm={4}>
+              <TextField
+                fullWidth
+                label="Indicador"
+                value={formData.indicador}
+                onChange={(e) => handleFieldChange('indicador', e.target.value)}
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     '& fieldset': {
@@ -472,101 +371,210 @@ const Formulario = () => {
                     padding: '15px',
                   }
                 }}
-                onChange={(event, newValue) => {
-                  if (newValue) {
-                    handleFieldChange('sku', newValue.label);
-                  } else {
-                    handleFieldChange('sku', '');
+              />
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <TextField
+                fullWidth
+                label="Valor Desviación"
+                value={formData.valor}
+                onChange={(e) => handleValorChange(e.target.value)}
+                onBlur={() => {
+                  // Al perder el foco, asegurarse de que tenga el símbolo %
+                  if (formData.valor && !formData.valor.endsWith('%')) {
+                    setFormData({ 
+                      ...formData, 
+                      valor: `${formData.valor}%`
+                    });
                   }
                 }}
-                getOptionLabel={(option) => option.label || ''}
-                renderInput={(params) => (
-                  <TextField {...params} 
-                    label="SKU" 
-                    placeholder='Buscar SKU...'
-                  />
-                )}
+                inputProps={{
+                  inputMode: 'numeric',
+                  pattern: '[0-9]*',
+                }}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': {
+                      borderRadius: '15px',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: '#0077ff',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: '#0095ff',
+                    },
+                  },
+                  '& .MuiInputBase-input': {
+                    padding: '15px',
+                  }
+                }}
               />
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <TextField
-              fullWidth
-              label="Receptor"
-              value={formData.receptor}
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  '& fieldset': {
-                    borderRadius: '15px',
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <TextField
+                fullWidth
+                label="Hora de Desviación"
+                type="time" // Usamos el tipo "time" para el selector de hora
+                value={formData.hora_desviacion}
+                onChange={(e) => handleFieldChange('hora_desviacion', e.target.value)}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': {
+                      borderRadius: '15px',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: '#0077ff',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: '#0095ff',
+                    },
                   },
-                  '&:hover fieldset': {
-                    borderColor: '#0077ff',
+                  '& .MuiInputBase-input': {
+                    padding: '15px',
+                  }
+                }}
+                InputLabelProps={{
+                  shrink: true, // Asegura que la etiqueta no se superponga al valor
+                }}
+                inputProps={{
+                  step: 300,
+                 // Incremento en segundos (5 minutos)
+                }}
+              />
+            </Grid>
+
+            {/* Fila 4 */}
+            <Grid item xs={12} sm={4}>
+              <Typography variant="subtitle1" color=' #003087'>Respuesta</Typography>
+              <RadioGroup
+                row
+                value={formData.respuesta}
+                onChange={(e) => handleFieldChange('respuesta', e.target.value)}
+              >
+                {['Sí', 'No'].map((option) => (
+                  <FormControlLabel key={option} value={option} control={<Radio />} label={option} />
+                ))}
+              </RadioGroup>
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <FormControl fullWidth>
+                
+                <Autocomplete
+                  options={skuData.map(item => ({ 
+                    label: item.SKU, // Asegúrate que coincida con la columna del Excel
+                  }))}
+                  value={formData.sku ? { label: formData.sku, producto: formData.producto } : null}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      '& fieldset': {
+                        borderRadius: '15px',
+                      },
+                      '&:hover fieldset': {
+                        borderColor: '#0077ff',
+                      },
+                      '&.Mui-focused fieldset': {
+                        borderColor: '#0095ff',
+                      },
+                    },
+                    '& .MuiInputBase-input': {
+                      padding: '15px',
+                    }
+                  }}
+                  onChange={(event, newValue) => {
+                    if (newValue) {
+                      handleFieldChange('sku', newValue.label);
+                    } else {
+                      handleFieldChange('sku', '');
+                    }
+                  }}
+                  getOptionLabel={(option) => option.label || ''}
+                  renderInput={(params) => (
+                    <TextField {...params} 
+                      label="SKU" 
+                      placeholder='Buscar SKU...'
+                    />
+                  )}
+                />
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <TextField
+                fullWidth
+                label="Receptor"
+                value={formData.receptor}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': {
+                      borderRadius: '15px',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: '#0077ff',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: '#0095ff',
+                    },
                   },
-                  '&.Mui-focused fieldset': {
-                    borderColor: '#0095ff',
+                  '& .MuiInputBase-input': {
+                    padding: '15px',
+                  }
+                }}
+                onChange={(e) => handleFieldChange('receptor', e.target.value)}
+              />
+            </Grid>
+
+            {/* Fila 5 */}
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Observaciones"
+                multiline
+                rows={3}
+                value={formData.observaciones}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': {
+                      borderRadius: '15px',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: '#0077ff',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: '#0095ff',
+                    },
                   },
-                },
-                '& .MuiInputBase-input': {
-                  padding: '15px',
-                }
-              }}
-              onChange={(e) => handleFieldChange('receptor', e.target.value)}
-            />
+                  '& .MuiInputBase-input': {
+                    padding: '15px',
+                  }
+                }}
+                onChange={(e) => handleFieldChange('observaciones', e.target.value)}
+              />
+            </Grid>
           </Grid>
 
-          {/* Fila 5 */}
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="Observaciones"
-              multiline
-              rows={3}
-              value={formData.observaciones}
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  '& fieldset': {
-                    borderRadius: '15px',
-                  },
-                  '&:hover fieldset': {
-                    borderColor: '#0077ff',
-                  },
-                  '&.Mui-focused fieldset': {
-                    borderColor: '#0095ff',
-                  },
-                },
-                '& .MuiInputBase-input': {
-                  padding: '15px',
-                }
-              }}
-              onChange={(e) => handleFieldChange('observaciones', e.target.value)}
-            />
-          </Grid>
-        </Grid>
-
-        {/* Botón de Guardar y Spinner */}
-        <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: 3 }}>
-  {isLoading ? (
-    <LoadingDots />
-  ) : (
-    <div className="buttons">
-      <button onClick={handleSubmit}>
-        <span></span>
-        <p data-start="Guardando..." data-text="Guardar Registro" data-title="Guardar Registro"></p>
-      </button>
-    </div>
-  )}
-</Box>
-        {/* Mensaje de éxito */}
-        {successMessage && (
-          <Alert icon={<CheckIcon fontSize="inherit" />} severity="success">
-            <Typography variant="body1" color="green">
-              {successMessage}
-            </Typography>
-          </Alert>
-        )}
-      </form>
-    </Box>
-  </>
+          {/* Botón de Guardar y Spinner */}
+          <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: 3 }}>
+    {isLoading ? (
+      <LoadingDots />
+    ) : (
+      <div className="buttons">
+        <button onClick={handleSubmit}>
+          <span></span>
+          <p data-start="Guardando..." data-text="Guardar Registro" data-title="Guardar Registro"></p>
+        </button>
+      </div>
+    )}
+  </Box>
+          {/* Mensaje de éxito */}
+          {successMessage && (
+            <Alert icon={<CheckIcon fontSize="inherit" />} severity="success">
+              <Typography variant="body1" color="green">
+                {successMessage}
+              </Typography>
+            </Alert>
+          )}
+        </form>
+      </Paper>
+    </Layout>
   );
 };
 
