@@ -302,7 +302,7 @@ class CargaMasivaView(APIView):
                     "Indicador": registro['indicador'],
                     "Valor %": registro['valor'],
                     "Desviación": registro['desviacion'],
-                    "Hora de Desviación": datetime.now().strftime("%H:%M"),
+                    "Hora de Desviación": registro['hora_desviacion'],
                     "Respuesta": "No",
                     "SKU": registro['sku'],
                     "Producto": f'=VLOOKUP({registro["sku"]},SKU!A:B,2,FALSE)',
@@ -402,7 +402,7 @@ class ExcelDataView(APIView):
             # Convert datetime columns to string format
             for col in df.columns:
                 if pd.api.types.is_datetime64_any_dtype(df[col]):
-                    df[col] = df[col].dt.strftime('%d-%m-%Y %H:%M:%S')
+                    df[col] = df[col]
 
             # Handle NaN values
             df = df.fillna('')

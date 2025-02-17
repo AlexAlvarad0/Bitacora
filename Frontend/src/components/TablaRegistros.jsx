@@ -3,22 +3,15 @@ import axios from 'axios';
 import {
   useReactTable,
   getCoreRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
   flexRender,
 } from '@tanstack/react-table';
-import { Box, Typography, Paper, CircularProgress, Button } from '@mui/material';
+import { Box, Typography, Paper, CircularProgress } from '@mui/material';
 import Layout from './Layout';
 
 const TablaRegistros = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
-  // Initialize sorting to sort by 'Fecha y Hora' in descending order
-  const [sorting, setSorting] = useState([
-    { id: 'Fecha y Hora', desc: true }
-  ]);
 
   const columns = [
     {
@@ -110,13 +103,7 @@ const TablaRegistros = () => {
   const table = useReactTable({
     data,
     columns,
-    state: {
-      sorting,
-    },
-    onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
   });
 
   useEffect(() => {
@@ -130,7 +117,19 @@ const TablaRegistros = () => {
         });
         
         if (response.data.status === 'success' && Array.isArray(response.data.data)) {
-          setData(response.data.data);
+          const sortedData = response.data.data.sort((a, b) => {
+            const parseDate = (dateStr) => {
+              if (!dateStr) return new Date(0); // Fecha mínima para valores vacíos
+              const [day, month, yearAndTime] = dateStr.split('-');
+              const [year, time] = yearAndTime.split(' ');
+              return new Date(`${year}-${month}-${day}T${time}`);
+            };
+          
+            const dateA = parseDate(a['Fecha y Hora']);
+            const dateB = parseDate(b['Fecha y Hora']);
+            return dateB - dateA; // Orden descendente
+          });
+          setData(sortedData);
         } else {
           console.error('Formato de datos inesperado:', response.data);
           setError('Error en el formato de datos recibidos');
@@ -193,18 +192,12 @@ const TablaRegistros = () => {
                         padding: '12px',
                         textAlign: 'left',
                         borderBottom: '2px solid #ddd',
-                        cursor: header.column.getCanSort() ? 'pointer' : 'default'
                       }}
-                      onClick={header.column.getToggleSortingHandler()}
                     >
                       {flexRender(
                         header.column.columnDef.header,
                         header.getContext()
                       )}
-                      {{
-                        asc: ' 🔼',
-                        desc: ' 🔽',
-                      }[header.column.getIsSorted()] ?? null}
                     </th>
                   ))}
                 </tr>
@@ -231,61 +224,6 @@ const TablaRegistros = () => {
               ))}
             </tbody>
           </table>
-        </Box>
-
-        <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Box>
-            <Button
-              onClick={() => table.setPageIndex(0)}
-              disabled={!table.getCanPreviousPage()}
-              variant="contained"
-              sx={{ mr: 1 }}
-            >
-              {'<<'}
-            </Button>
-            <Button
-              onClick={() => table.previousPage()}
-              disabled={!table.getCanPreviousPage()}
-              variant="contained"
-              sx={{ mr: 1 }}
-            >
-              {'<'}
-            </Button>
-            <Button
-              onClick={() => table.nextPage()}
-              disabled={!table.getCanNextPage()}
-              variant="contained"
-              sx={{ mr: 1 }}
-            >
-              {'>'}
-            </Button>
-            <Button
-              onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-              disabled={!table.getCanNextPage()}
-              variant="contained"
-            >
-              {'>>'}
-            </Button>
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Typography>
-              Página {table.getState().pagination.pageIndex + 1} de{' '}
-              {table.getPageCount()}
-            </Typography>
-            <select
-              value={table.getState().pagination.pageSize}
-              onChange={e => {
-                table.setPageSize(Number(e.target.value));
-              }}
-              style={{ padding: '4px' }}
-            >
-              {[10, 25, 50, 100].map(pageSize => (
-                <option key={pageSize} value={pageSize}>
-                  Mostrar {pageSize}
-                </option>
-              ))}
-            </select>
-          </Box>
         </Box>
       </Paper>
     </Layout>

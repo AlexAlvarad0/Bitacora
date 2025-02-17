@@ -65,6 +65,7 @@ const CargaMasiva = ({ open, onClose, areaUnidades }) => {
       sku: '',
       valor: '',
       desviacion: '',
+      hora_desviacion: '', // <-- Nuevo
       area: '',
       unidad: '',
       receptor: '',
@@ -82,20 +83,21 @@ const CargaMasiva = ({ open, onClose, areaUnidades }) => {
       const skus = skusText.split('\n').filter(line => /^\d+$/.test(line.trim()));
       const valuesAndDeviations = valuesText
         .split('\n')
-        .filter(line => /^\d+[.,]\d+%?\s+D[1-4]$/i.test(line.trim()))
+        .filter(line => /^\d+[.,]\d+%?\s+D[1-4]\s+\d{2}:\d{2}$/i.test(line.trim()))
         .map(line => {
-          const [value, deviation] = line.trim().split(/\s+/);
+          const [value, deviation, hora] = line.trim().split(/\s+/);
           return {
             valor: value.endsWith('%') ? value : value + '%',
-            desviacion: deviation.toUpperCase()
+            desviacion: deviation.toUpperCase(),
+            hora_desviacion: hora
           };
         });
 
-
       const newRegistros = skus.map((sku, index) => ({
         sku: sku.trim(),
-        valor: valuesAndDeviations[index].valor,
-        desviacion: valuesAndDeviations[index].desviacion,
+        valor: valuesAndDeviations[index]?.valor || '',
+        desviacion: valuesAndDeviations[index]?.desviacion || '',
+        hora_desviacion: valuesAndDeviations[index]?.hora_desviacion || '',
         area: '',
         unidad: '',
         receptor: '',
@@ -136,6 +138,7 @@ const CargaMasiva = ({ open, onClose, areaUnidades }) => {
         sku: registro.sku,
         valor: registro.valor,
         desviacion: registro.desviacion,
+        hora_desviacion: registro.hora_desviacion, // <-- Nuevo
         area: registro.area,
         unidad: registro.unidad,
         receptor: registro.receptor,
@@ -197,7 +200,7 @@ const CargaMasiva = ({ open, onClose, areaUnidades }) => {
         </div>
       )}
       
-      <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+      <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth> {/* Adjusted size */}
         <DialogTitle>Carga Masiva de Registros</DialogTitle>
         <DialogContent>
           <Grid container spacing={2} sx={{ mb: 3, mt: 1 }}>
@@ -296,9 +299,9 @@ const CargaMasiva = ({ open, onClose, areaUnidades }) => {
                   parseData(rawSkus, e.target.value);
                 }}
                 placeholder={`Ejemplo:
-2,23% D3
-1,62% D3
-2,50% D3`}
+2,23% D3 12:30
+1,62% D3 13:45
+2,50% D3 14:00`}
               />
             </Grid>
 
@@ -343,6 +346,16 @@ const CargaMasiva = ({ open, onClose, areaUnidades }) => {
                         fullWidth
                         label="Desviación"
                         value={registro.desviacion}
+                        InputProps={{ readOnly: true }}
+                      />
+                    </Grid>
+
+                    {/* Hora de Desviación (read-only) */}
+                    <Grid item xs={12} sm={6} md={3}>
+                      <TextField
+                        fullWidth
+                        label="Hora de Desviación"
+                        value={registro.hora_desviacion}
                         InputProps={{ readOnly: true }}
                       />
                     </Grid>
