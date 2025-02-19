@@ -199,7 +199,7 @@ const Header = () => {
                 borderRadius: '4px',
                 whiteSpace: 'nowrap',
                 padding: collapsed ? '8px' : '8px 16px',
-                justifyContent: collapsed ? 'center' : 'flex-start',
+                justifyContent: collapsed ? 'center' : 'flex',
                 '& .MuiButton-startIcon': {
                   marginRight: collapsed ? 0 : 1,
                   marginLeft: collapsed ? 0 : -0.5

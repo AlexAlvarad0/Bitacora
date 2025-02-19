@@ -15,15 +15,12 @@ import {
   FormControlLabel,
   Radio,
   Alert,
-  Button,
   Paper
 } from '@mui/material';
 import LoadingDots from './Loading';
 import { Autocomplete } from '@mui/material';
-import Header from './Header';
 import CheckIcon from '@mui/icons-material/Check';
 import '../styles/boton.css'
-import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
 import CargaMasiva from './CargaMasiva';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import '../styles/btn.css';
@@ -92,16 +89,32 @@ const Formulario = () => {
   };
 
   const areaUnidades = {
-    "Cortes Especiales": ["Sala de Laminado", "Cortes Especiales", "Ecualizado", "Marinado", "Pimentado", "Porcionado"],
+    "Abastecimiento": ["Armado de Cajas", "Bodega"],
+    "Administración" : ["Adminstración"],
+    "Calidad": ["Aseguramiento de Calidad"],
+    "Congelado": ["Cambio de Embalaje", "Carton Freezer", "Congelado", "Paletizado"],
+    "Control de Producción": ["Control de Producción", "Informática", "Romana de Camiones"],
+    "Cortes Especiales": ["Sala de Laminado", "Cortes Especiales", "Ecualizado", 
+                         "Marinado", "Pimentado", "Porcionado"],
+    "Despacho": ["Despacho"],
     "Desposte": ["Calibrado Fresco", "Desposte", "Rectificado"],
-    "Faena": ["Butina", "Corrales", "Faena", "Lavado de Camiones"]
+    "Faena": ["Butina", "Corrales", "Faena", "Lavado de Camiones"],
+    "General" : ["Estatus Planta RO", "Planta Rosario", "Resumen Semanal", "Skyview"],
+    "Mantenimiento": ["Mantenimiento"],
+    "Personas": ["Personas", "SSO"],
+    "Producción": ["Cumplimiento de Producción"],
+    "Producción Animal": ["Producción Animal", "Torre Producción Animal"],
+    "Servicios": ["Servicios"],
+    "Torre de Control": ["Torre de Control"]
   };
 
   const handleAreaChange = (value) => {
+    const unidades = areaUnidades[value] || [];
     setFormData({
       ...formData,
       area: value,
-      unidad: '' // Resetear la unidad cuando cambia el área
+      // Si el área tiene una única subárea, la seleccionamos automáticamente
+      unidad: unidades.length === 1 ? unidades[0] : ''
     });
   };
   const validateForm = () => {
@@ -283,7 +296,7 @@ const Formulario = () => {
                   }}
                 >
                   <MenuItem value="">Seleccionar...</MenuItem>
-                  {['Correo', 'Microsoft Teams','Presencial', 'Radio', 'Teléfono Fijo', 'WhatsApp'].map((option) => (
+                  {['Radio','WhatsApp','Presencial','Teléfono Fijo','Correo', 'Microsoft Teams' ].map((option) => (
                     <MenuItem key={option} value={option}>
                       {option}
                     </MenuItem>
@@ -296,7 +309,7 @@ const Formulario = () => {
                 <InputLabel>Área</InputLabel>
                 <Select
                   value={formData.area}
-                  onChange={(e) => handleFieldChange('area', e.target.value)}
+                  onChange={(e) => handleAreaChange(e.target.value)} // Cambia esta línea
                   sx={{
                     borderRadius: '15px',
                     '& .MuiOutlinedInput-notchedOutline': {
@@ -390,12 +403,7 @@ const Formulario = () => {
                 onChange={(e) => handleValorChange(e.target.value)}
                 onBlur={() => {
                   // Al perder el foco, asegurarse de que tenga el símbolo %
-                  if (formData.valor && !formData.valor.endsWith('%')) {
-                    setFormData({ 
-                      ...formData, 
-                      valor: `${formData.valor}%`
-                    });
-                  }
+                  
                 }}
                 inputProps={{
                   inputMode: 'numeric',

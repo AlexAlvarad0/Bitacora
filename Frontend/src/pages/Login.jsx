@@ -7,11 +7,14 @@ import '../styles/botoninisesion.css';
 import '../styles/fonts.css';
 import LockIcon from '@mui/icons-material/Lock';
 import PersonIcon from '@mui/icons-material/Person';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { Snackbar, Alert } from '@mui/material';
 
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [openError, setOpenError] = useState(false);
   const navigate = useNavigate();
 
@@ -64,12 +67,19 @@ const Login = () => {
           <div className="input-group">
           <LockIcon />
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               placeholder="Contraseña"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               onKeyPress={handleKeyPress}
             />
+            <div 
+              className="password-toggle" 
+              onClick={() => setShowPassword(!showPassword)}
+              style={{ cursor: 'pointer' }}
+            >
+              {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+            </div>
           </div>
           
           <buttonn onClick={handleLogin}>
@@ -82,8 +92,8 @@ const Login = () => {
         </div>
         
         <div className="welcome-side">
-          <h2>Registro Bitácora TC</h2>
-          <p></p>
+          <h2>Registro Bitácora Torre de Control Rosario</h2>
+
           <img 
           src={logo} 
           alt='Logo' 

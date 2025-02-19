@@ -3,15 +3,28 @@ import axios from 'axios';
 import {
   useReactTable,
   getCoreRowModel,
+  getPaginationRowModel,
   flexRender,
 } from '@tanstack/react-table';
-import { Box, Typography, Paper, CircularProgress } from '@mui/material';
+import { 
+  Box, 
+  Typography, 
+  Paper, 
+  CircularProgress,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Stack,
+  Pagination
+} from '@mui/material';
 import Layout from './Layout';
 
 const TablaRegistros = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [pageSize, setPageSize] = useState(10);
 
   const columns = [
     {
@@ -104,6 +117,13 @@ const TablaRegistros = () => {
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    state: {
+      pagination: {
+        pageSize: pageSize,
+        pageIndex: 0,
+      },
+    },
   });
 
   useEffect(() => {
@@ -179,6 +199,23 @@ const TablaRegistros = () => {
           Registros de Bitácora
         </Typography>
 
+        <Box sx={{ mb: 2 }}>
+          <FormControl size="small" sx={{ minWidth: 120 }}>
+            <InputLabel>Filas por página</InputLabel>
+            <Select
+              value={pageSize}
+              label="Filas por página"
+              onChange={(e) => setPageSize(Number(e.target.value))}
+            >
+              {[10, 25, 50, 100].map((size) => (
+                <MenuItem key={size} value={size}>
+                  {size}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Box>
+
         <Box sx={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
@@ -225,6 +262,27 @@ const TablaRegistros = () => {
             </tbody>
           </table>
         </Box>
+
+        <Stack 
+          direction="row" 
+          spacing={2} 
+          justifyContent="flex-end" 
+          alignItems="center" 
+          sx={{ mt: 2 }}
+        >
+          <Typography variant="body2">
+            Página {table.getState().pagination.pageIndex + 1} de{' '}
+            {table.getPageCount()}
+          </Typography>
+          <Pagination
+            count={table.getPageCount()}
+            page={table.getState().pagination.pageIndex + 1}
+            onChange={(event, newPage) => {
+              table.setPageIndex(newPage - 1);
+            }}
+            color="primary"
+          />
+        </Stack>
       </Paper>
     </Layout>
   );

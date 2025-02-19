@@ -15,7 +15,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    background-image: url('../images/fondo.png');
+    background-image: url('../images/fondo.jpg');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -104,6 +104,8 @@ body {
     position: relative;
     width: 100%;
     margin-bottom: 15px;
+    max-width: 100%;
+    margin: 15px auto;
   }
 
 .input-group label {
@@ -116,7 +118,7 @@ body {
 }
 
 .input-group input {
-    width: 94%;
+    width: calc(100% - 45px);  /* Ajustado para considerar el padding y el ícono */
     padding: 10px 10px 10px 35px; 
     border: 1px solid #e5e7eb;
     border-radius: 15px;
@@ -138,6 +140,19 @@ body {
     color: #666;
     font-size: 20px;
   }
+
+.password-toggle {
+  position: absolute;
+  right: 45px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #666;
+}
+
+.password-toggle:hover {
+  color: #333;
+}
+
 .login-button {
     width: 70%;
     padding: 12px;

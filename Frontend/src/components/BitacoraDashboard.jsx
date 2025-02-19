@@ -32,6 +32,8 @@ const BitacoraDashboard = () => {
   const [filteredData, setFilteredData] = useState([]);
   const [desviacionesPorDia, setDesviacionesPorDia] = useState([]);
   const [desviacionesPorArea, setDesviacionesPorArea] = useState([]);
+  const [selectedArea, setSelectedArea] = useState(''); // Nuevo estado para el área
+  const [areas, setAreas] = useState([]); // Nuevo estado para las áreas disponibles
 
   // Obtener datos de la API
   useEffect(() => {
@@ -53,6 +55,10 @@ const BitacoraDashboard = () => {
         
         setData(formattedData);
         setLoading(false);
+
+        // Obtener áreas únicas
+        const uniqueAreas = [...new Set(formattedData.map(item => item.Área).filter(area => area))];
+        setAreas(uniqueAreas);
       } catch (err) {
         setError('Error al cargar los datos: ' + err.message);
         setLoading(false);
@@ -76,11 +82,15 @@ const BitacoraDashboard = () => {
     if (selectedDesviaciones.length > 0) {
       filtered = filtered.filter(item => selectedDesviaciones.includes(item.Desviación));
     }
+
+    if (selectedArea) {
+      filtered = filtered.filter(item => item.Área === selectedArea);
+    }
     
     setFilteredData(filtered);
     procesarDatosPorDia(filtered);
     procesarDatosPorArea(filtered);
-  }, [selectedDates, selectedDesviaciones, data]);
+  }, [selectedDates, selectedDesviaciones, selectedArea, data]);
 
   // Procesar datos para el gráfico de desviaciones por día
   const procesarDatosPorDia = (data) => {
@@ -154,6 +164,11 @@ const BitacoraDashboard = () => {
     setSelectedDesviaciones(typeof value === 'string' ? value.split(',') : value);
   };
 
+  // Manejar selección de área
+  const handleAreaChange = (event) => {
+    setSelectedArea(event.target.value);
+  };
+
   if (loading) {
     return (
       <Layout>
@@ -188,7 +203,7 @@ const BitacoraDashboard = () => {
           Análisis de Desviaciones
         </Typography>
         <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12} md={4}>
+          <Grid item xs={12} md={3}>
             <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
               <DatePicker
                 label="Seleccionar fecha"
@@ -198,7 +213,7 @@ const BitacoraDashboard = () => {
               />
             </LocalizationProvider>
           </Grid>
-          <Grid item xs={12} md={4}>
+          <Grid item xs={12} md={3}>
             <FormControl fullWidth>
               <InputLabel id="desviaciones-label">Desviaciones</InputLabel>
               <Select
@@ -242,14 +257,35 @@ const BitacoraDashboard = () => {
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={12} md={4}>
+          <Grid item xs={12} md={3}>
+            <FormControl fullWidth>
+              <InputLabel id="area-label">Área</InputLabel>
+              <Select
+                labelId="area-label"
+                id="area-select"
+                value={selectedArea}
+                onChange={handleAreaChange}
+              >
+                <MenuItem value="">
+                  <em>Todas</em>
+                </MenuItem>
+                {areas.map((area) => (
+                  <MenuItem key={area} value={area}>
+                    {area}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} md={3}>
             <Button 
               variant="outlined" 
               onClick={() => {
                 setSelectedDates([]);
                 setSelectedDesviaciones(['D1', 'D2', 'D3', 'D4']);
+                setSelectedArea('');
               }}
-              disabled={selectedDates.length === 0 && selectedDesviaciones.length === 4}
+              disabled={selectedDates.length === 0 && selectedDesviaciones.length === 4 && !selectedArea}
             >
               Limpiar filtros
             </Button>
@@ -327,7 +363,7 @@ const BitacoraDashboard = () => {
                   cy="50%"
                   outerRadius={150}
                   fill="#8884d8"
-                  label={({name, value}) => `${name}: ${value}`}
+                  label={({name, percent}) => `${name}: ${(percent * 100).toFixed(2)}%`}
                 >
                   {desviacionesPorArea.map((entry, index) => (
                     <Cell 

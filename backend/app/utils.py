@@ -6,8 +6,8 @@ import pandas as pd
 def upload_to_sharepoint(data, file_name):
     sharepoint_url = "https://agrosuper.sharepoint.com/sites/PanelPlantaRosario"
     folder_path = "/sites/PanelPlantaRosario/Documentos compartidos/1.- Torre de Control/1.- Gestión TC/2- Registro Bitácora TC (interfaz web)"
-    username = 'aialvarado@agrousper.com'
-    password = 'Produccion2025.'
+    username = 'user'
+    password = 'password'
 
     ctx = ClientContext(sharepoint_url).with_credentials(
         UserCredential(username, password)

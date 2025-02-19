@@ -42,7 +42,7 @@ class SKULoadView(APIView):
             archivo_excel = 'SKU.xlsx'
 
             ctx = ClientContext(sharepoint_url).with_credentials(
-                UserCredential('aialvarado@agrosuper.com', 'Produccion2025.')
+                UserCredential('user', 'password')
             )
 
             # Leer el archivo existente desde SharePoint
@@ -76,7 +76,7 @@ class FormularioView(APIView):
             archivo_excel = 'Bitácora TC.xlsx'
 
             ctx = ClientContext(sharepoint_url).with_credentials(
-                UserCredential('aialvarado@agrosuper.com', 'Produccion2025.')
+                UserCredential('user', 'password')
             )
 
             # Leer el archivo existente desde SharePoint
@@ -199,7 +199,7 @@ class BitacoraDataView(APIView):
             folder_path = "/sites/PanelPlantaRosario/Documentos compartidos/1.- Torre de Control/1.- Gestión TC/2- Registro Bitácora TC (interfaz web)"
             archivo_excel = 'Bitácora TC.xlsx'
             ctx = ClientContext(sharepoint_url).with_credentials(
-                UserCredential('aialvarado@agrosuper.com', 'Produccion2025.')
+                UserCredential('user', 'password')
             )
             # Leer el archivo existente desde SharePoint
             response = ctx.web.get_file_by_server_relative_url(folder_path + "/" + archivo_excel).execute_query()
@@ -273,7 +273,7 @@ class CargaMasivaView(APIView):
             archivo_excel = 'Bitácora TC.xlsx'
 
             ctx = ClientContext(sharepoint_url).with_credentials(
-                UserCredential('aialvarado@agrosuper.com', 'Produccion2025.')
+                UserCredential('user', 'password')
             )
 
             # Leer el archivo existente
@@ -387,7 +387,7 @@ class ExcelDataView(APIView):
 
             # Initialize SharePoint context
             ctx = ClientContext(sharepoint_url).with_credentials(
-                UserCredential('aialvarado@agrosuper.com', 'Produccion2025.')
+                UserCredential('user', 'password')
             )
 
             # Get file from SharePoint
