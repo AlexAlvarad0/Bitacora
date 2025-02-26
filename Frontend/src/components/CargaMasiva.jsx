@@ -15,23 +15,33 @@ import {
   RadioGroup,
   FormControlLabel,
   Radio,
-  InputAdornment,      // <-- Nuevo
-  IconButton,           // <-- Nuevo
-  CircularProgress  // <-- Nuevo
+  InputAdornment,      
+  IconButton,           
+  CircularProgress  
 } from '@mui/material';
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';  // <-- Nuevo
+import ContentCopyIcon from '@mui/icons-material/ContentCopy'; 
 import axios from 'axios';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 
-const CargaMasiva = ({ open, onClose, areaUnidades }) => {
+const CargaMasiva = ({ open, onClose }) => {
   const [baseData, setBaseData] = useState({
     tipo_notificacion: '',
     sentido: '',
     canal_comunicacion: '',
     indicador: '',
+    area: '',           // New common field
+    unidad: '',         // New common field
+    receptor: '',       // New common field
+    respuesta: '',      // New common field
+    observaciones: ''   // New common field
   });
-
+  const areaUnidades = {
+    "Desposte": ["Calibrado Fresco", "Desposte", "Rectificado"],
+    "Faena": ["Butina", "Corrales", "Faena", "Lavado de Camiones"],
+    "Cortes Especiales": ["Sala de Laminado", "Cortes Especiales", "Ecualizado", 
+                         "Marinado", "Pimentado", "Porcionado"]
+  };
   const [rawSkus, setRawSkus] = useState('');
   const [rawValues, setRawValues] = useState('');
   const [registros, setRegistros] = useState([]);
@@ -44,6 +54,11 @@ const CargaMasiva = ({ open, onClose, areaUnidades }) => {
       sentido: '',
       canal_comunicacion: '',
       indicador: '',
+      area: '',
+      unidad: '',
+      receptor: '',
+      respuesta: '',
+      observaciones: ''
     });
     setRawSkus('');
     setRawValues('');
@@ -63,6 +78,7 @@ const CargaMasiva = ({ open, onClose, areaUnidades }) => {
   const addNewRegistro = () => {
     setRegistros([...registros, {
       sku: '',
+      respusta: '',
       valor: '',
       desviacion: '',
       hora_desviacion: '', // <-- Nuevo
@@ -78,30 +94,27 @@ const CargaMasiva = ({ open, onClose, areaUnidades }) => {
     setRegistros(newRegistros);
   };
 
-  const parseData = (skusText, valuesText) => {
+  const parseData = (skusText, valuesText, indicador) => {
     try {
-      const skus = skusText.split('\n').filter(line => /^\d+$/.test(line.trim()));
+      const items = skusText.split('\n').filter(line => line.trim() !== '');
       const valuesAndDeviations = valuesText
         .split('\n')
         .filter(line => /^\d+[.,]\d+%?\s+D[1-4]\s+\d{2}:\d{2}$/i.test(line.trim()))
         .map(line => {
           const [value, deviation, hora] = line.trim().split(/\s+/);
           return {
-            valor: value.endsWith('%') ? value : value + '%',
+            valor: value,
             desviacion: deviation.toUpperCase(),
             hora_desviacion: hora
           };
         });
 
-      const newRegistros = skus.map((sku, index) => ({
-        sku: sku.trim(),
+      const newRegistros = items.map((item, index) => ({
+        sku: indicador === 'Productos No Objetivos' || indicador === 'Productos Complementarios' || indicador === 'Valor Agregado' ? '' : item.trim(),
+        producto: indicador === 'Productos No Objetivos' || indicador === 'Productos Complementarios' || indicador === 'Valor Agregado' ? item.trim() : '',
         valor: valuesAndDeviations[index]?.valor || '',
         desviacion: valuesAndDeviations[index]?.desviacion || '',
-        hora_desviacion: valuesAndDeviations[index]?.hora_desviacion || '',
-        area: '',
-        unidad: '',
-        receptor: '',
-        observaciones: '',
+        hora_desviacion: valuesAndDeviations[index]?.hora_desviacion || ''
       }));
 
       setRegistros(newRegistros);
@@ -121,28 +134,20 @@ const CargaMasiva = ({ open, onClose, areaUnidades }) => {
         return;
       }
 
-      // Validate that all required fields are filled
-      const isValid = registros.every(registro => 
-        registro.area && 
-        registro.unidad && 
-        registro.receptor
-      );
-
-      if (!isValid) {
-        setPopupMessage({ open: true, message: 'Complete todos los campos requeridos en cada registro', type: 'error' });
+      // Validate that all required common fields are filled
+      if (!baseData.area || !baseData.unidad || !baseData.receptor) {
+        setPopupMessage({ open: true, message: 'Complete todos los campos comunes requeridos', type: 'error' });
         setIsLoading(false);
         return;
       }
 
       const formattedData = registros.map(registro => ({
-        sku: registro.sku,
-        valor: registro.valor,
-        desviacion: registro.desviacion,
-        hora_desviacion: registro.hora_desviacion, // <-- Nuevo
-        area: registro.area,
-        unidad: registro.unidad,
-        receptor: registro.receptor,
-        observaciones: registro.observaciones || '',
+        ...registro,
+        area: baseData.area,
+        unidad: baseData.unidad,
+        receptor: baseData.receptor,
+        respuesta: baseData.respuesta,
+        observaciones: baseData.observaciones,
         tipo_notificacion: baseData.tipo_notificacion,
         sentido: baseData.sentido,
         canal_comunicacion: baseData.canal_comunicacion,
@@ -201,16 +206,16 @@ const CargaMasiva = ({ open, onClose, areaUnidades }) => {
       )}
       
       <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth> {/* Adjusted size */}
-        <DialogTitle>Carga Masiva de Registros</DialogTitle>
+        <DialogTitle variant='h5' sx={{fontFamily:'Gotham-Bold, sans-serif', color:'#003087'}}>Carga Masiva de Registros</DialogTitle>
         <DialogContent>
           <Grid container spacing={2} sx={{ mb: 3, mt: 1 }}>
             {/* Datos comunes */}
             <Grid item xs={12}>
-              <Typography variant="h6">Datos Comunes</Typography>
+              <Typography variant="h6" sx={{fontFamily:'Gotham-Bold, sans-serif'}}> Datos Comunes</Typography>
             </Grid>
             
             <Grid item xs={12} sm={6}>
-              <Typography variant="subtitle2">Tipo de Notificación</Typography>
+              <Typography variant="subtitle1" color=' #003087'>Tipo de Notificación</Typography>
               <RadioGroup
                 row
                 value={baseData.tipo_notificacion}
@@ -223,7 +228,7 @@ const CargaMasiva = ({ open, onClose, areaUnidades }) => {
             </Grid>
 
             <Grid item xs={12} sm={6}>
-              <Typography variant="subtitle2">Sentido</Typography>
+              <Typography variant="subtitle1" color=' #003087'>Sentido</Typography>
               <RadioGroup
                 row
                 value={baseData.sentido}
@@ -240,10 +245,25 @@ const CargaMasiva = ({ open, onClose, areaUnidades }) => {
                 <InputLabel>Canal de Comunicación</InputLabel>
                 <Select
                   value={baseData.canal_comunicacion}
+                  sx={{
+                    borderRadius: '15px',
+                    '& .MuiOutlinedInput-notchedOutline': {
+                      border: '2px solid #e8e8e8',
+                    },
+                    '&:hover .MuiOutlinedInput-notchedOutline': {
+                      borderColor: '#0077ff',
+                    },
+                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                      borderColor: '#0095ff',
+                    },
+                    '& .MuiSelect-select': {
+                      padding: '15px',
+                    }
+                  }}
                   onChange={(e) => handleBaseDataChange('canal_comunicacion', e.target.value)}
                   label="Canal de Comunicación"
                 >
-                  {['Correo', 'Microsoft Teams', 'Presencial', 'Radio', 'Teléfono Fijo', 'WhatsApp'].map((option) => (
+                  {['Radio','WhatsApp','Presencial','Teléfono Fijo','Correo', 'Microsoft Teams' ].map((option) => (
                     <MenuItem key={option} value={option}>{option}</MenuItem>
                   ))}
                 </Select>
@@ -255,48 +275,232 @@ const CargaMasiva = ({ open, onClose, areaUnidades }) => {
                 <InputLabel>Indicador</InputLabel>
                 <Select
                   value={baseData.indicador}
+                  sx={{
+                    borderRadius: '15px',
+                    '& .MuiOutlinedInput-notchedOutline': {
+                      border: '2px solid #e8e8e8',
+                    },
+                    '&:hover .MuiOutlinedInput-notchedOutline': {
+                      borderColor: '#0077ff',
+                    },
+                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                      borderColor: '#0095ff',
+                    },
+                    '& .MuiSelect-select': {
+                      padding: '15px',
+                    }
+                  }}
                   onChange={(e) => handleBaseDataChange('indicador', e.target.value)}
                   label="Indicador"
                 >
                   <MenuItem value="Cubicaje">Cubicaje</MenuItem>
                   <MenuItem value="Give Away">Give Away</MenuItem>
+                  <MenuItem value="Productos No Objetivos">Productos No Objetivos</MenuItem>
+                  <MenuItem value="Productos Complementarios">Productos Complementarios</MenuItem>
+                  <MenuItem value="Valor Agregado">Valor Agregado</MenuItem>
                 </Select>
               </FormControl>
             </Grid>
 
+            {/* New common fields */}
+            <Grid item xs={12} sm={6} md={3}>
+              <FormControl fullWidth>
+                <InputLabel>Área</InputLabel>
+                <Select
+                  value={baseData.area}
+                  onChange={(e) => handleBaseDataChange('area', e.target.value)}
+                  label="Área"
+                  sx={{
+                    borderRadius: '15px',
+                    '& .MuiOutlinedInput-notchedOutline': {
+                      border: '2px solid #e8e8e8',
+                    },
+                    '&:hover .MuiOutlinedInput-notchedOutline': {
+                      borderColor: '#0077ff',
+                    },
+                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                      borderColor: '#0095ff',
+                    },
+                    '& .MuiSelect-select': {
+                      padding: '15px',
+                    }
+                  }}
+                >
+                  {Object.keys(areaUnidades).map((area) => (
+                    <MenuItem key={area} value={area}>{area}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+
+            <Grid item xs={12} sm={6} md={3}>
+              <FormControl fullWidth>
+                <InputLabel>Subárea</InputLabel>
+                <Select
+                  value={baseData.unidad}
+                  onChange={(e) => handleBaseDataChange('unidad', e.target.value)}
+                  label="Subárea"
+                  disabled={!baseData.area}
+                  sx={{
+                    borderRadius: '15px',
+                    '& .MuiOutlinedInput-notchedOutline': {
+                      border: '2px solid #e8e8e8',
+                    },
+                    '&:hover .MuiOutlinedInput-notchedOutline': {
+                      borderColor: '#0077ff',
+                    },
+                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                      borderColor: '#0095ff',
+                    },
+                    '& .MuiSelect-select': {
+                      padding: '15px',
+                    }
+                  }}
+                >
+                  {baseData.area && areaUnidades[baseData.area]?.map((unidad) => (
+                    <MenuItem key={unidad} value={unidad}>{unidad}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+
+            <Grid item xs={12} sm={6} md={3}>
+              <TextField
+                fullWidth
+                label="Receptor"
+                value={baseData.receptor}
+                onChange={(e) => handleBaseDataChange('receptor', e.target.value)}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': {
+                      borderRadius: '15px',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: '#0077ff',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: '#0095ff',
+                    },
+                  },
+                  '& .MuiInputBase-input': {
+                    padding: '15px',
+                  }
+                }}
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={6} md={3}>
+              <FormControl>
+                <Typography variant="subtitle1" color="#003087" sx={{ mb: -1.5 }}>
+                  Respuesta
+                </Typography>
+                <RadioGroup
+                  row
+                  value={baseData.respuesta}
+                  onChange={(e) => handleBaseDataChange('respuesta', e.target.value)}
+                  sx={{
+                    justifyContent: 'flex-start',
+                    '& .MuiFormControlLabel-root': {
+                      marginLeft: 0,
+                      marginRight: 2
+                    }
+                  }}
+                >
+                  {['Sí', 'No'].map((option) => (
+                    <FormControlLabel key={option} value={option} control={<Radio />} label={option} />
+                  ))}
+                </RadioGroup>
+              </FormControl>
+            </Grid>
+
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Observaciones"
+                value={baseData.observaciones}
+                onChange={(e) => handleBaseDataChange('observaciones', e.target.value)}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': {
+                      borderRadius: '15px',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: '#0077ff',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: '#0095ff',
+                    },
+                  },
+                  '& .MuiInputBase-input': {
+                    padding: '15px',
+                  }
+                }}
+              />
+            </Grid>
+
             {/* Campos de entrada de datos */}
             <Grid item xs={12}>
-              <Typography variant="h6" sx={{ mt: 2 }}>Datos a Cargar</Typography>
+              <Typography variant="h6" sx={{ fontFamily:'Gotham-Bold' }}>Datos a Cargar</Typography>
             </Grid>
 
             <Grid item xs={6}>
-              <Typography variant="subtitle2" gutterBottom>SKUs</Typography>
+              <Typography variant="subtitle1" color=' #003087' gutterBottom>{baseData.indicador === 'Productos No Objetivos' || baseData.indicador === 'Productos Complementarios' || baseData.indicador === 'Valor Agregado' ? 'Productos' : 'SKUs'}</Typography>
               <TextField
                 fullWidth
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': {
+                      borderRadius: '15px',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: '#0077ff',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: '#0095ff',
+                    },
+                  },
+                  '& .MuiInputBase-input': {
+                    padding: '10px',
+                  }
+                }}
                 multiline
-                rows={10}
+                rows={7}
                 value={rawSkus}
                 onChange={(e) => {
                   setRawSkus(e.target.value);
-                  parseData(e.target.value, rawValues);
+                  parseData(e.target.value, rawValues, baseData.indicador);
                 }}
                 placeholder={`Ejemplo:
-1021731
-1022748
-1023373`}
+${baseData.indicador === 'Productos No Objetivos' || baseData.indicador === 'Productos Complementarios' || baseData.indicador === 'Valor Agregado' ? 'Colas\nFémur\nCazuela' : '1021731\n1022748\n1023373'}`}
               />
             </Grid>
 
             <Grid item xs={6}>
-              <Typography variant="subtitle2" gutterBottom>Valores y Desviaciones</Typography>
+              <Typography variant="subtitle1" color=' #003087' gutterBottom>Valores, Desviación y Hora</Typography>
               <TextField
                 fullWidth
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': {
+                      borderRadius: '15px',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: '#0077ff',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: '#0095ff',
+                    },
+                  },
+                  '& .MuiInputBase-input': {
+                    padding: '10px',
+                  }
+                }}
                 multiline
-                rows={10}
+                rows={7}
                 value={rawValues}
                 onChange={(e) => {
                   setRawValues(e.target.value);
-                  parseData(rawSkus, e.target.value);
+                  parseData(rawSkus, e.target.value, baseData.indicador);
                 }}
                 placeholder={`Ejemplo:
 2,23% D3 12:30
@@ -309,132 +513,10 @@ const CargaMasiva = ({ open, onClose, areaUnidades }) => {
             {registros.length > 0 && (
               <>
                 <Grid item xs={12}>
-                  <Typography variant="h6" sx={{ mt: 2 }}>
+                  <Typography variant="h6" sx={{ fontFamily:'Gotham-Bold' }}>
                     Registros Detectados: {registros.length}
                   </Typography>
                 </Grid>
-
-                {registros.map((registro, index) => (
-                  <Grid container item spacing={2} key={index}>
-                    <Grid item xs={12}>
-                      <Typography variant="subtitle1">Registro {index + 1}</Typography>
-                    </Grid>
-                    
-                    {/* SKU (read-only) */}
-                    <Grid item xs={12} sm={6} md={3}>
-                      <TextField
-                        fullWidth
-                        label="SKU"
-                        value={registro.sku}
-                        InputProps={{ readOnly: true }}
-                      />
-                    </Grid>
-
-                    {/* Valor (read-only) */}
-                    <Grid item xs={12} sm={6} md={3}>
-                      <TextField
-                        fullWidth
-                        label="Valor Desviación"
-                        value={registro.valor}
-                        InputProps={{ readOnly: true }}
-                      />
-                    </Grid>
-
-                    {/* Desviación (read-only) */}
-                    <Grid item xs={12} sm={6} md={3}>
-                      <TextField
-                        fullWidth
-                        label="Desviación"
-                        value={registro.desviacion}
-                        InputProps={{ readOnly: true }}
-                      />
-                    </Grid>
-
-                    {/* Hora de Desviación (read-only) */}
-                    <Grid item xs={12} sm={6} md={3}>
-                      <TextField
-                        fullWidth
-                        label="Hora de Desviación"
-                        value={registro.hora_desviacion}
-                        InputProps={{ readOnly: true }}
-                      />
-                    </Grid>
-
-                    {/* Área (editable) */}
-                    <Grid item xs={12} sm={6} md={3}>
-                      <FormControl fullWidth>
-                        <InputLabel>Área</InputLabel>
-                        <Select
-                          value={registro.area}
-                          onChange={(e) => handleRegistroChange(index, 'area', e.target.value)}
-                          label="Área"
-                        >
-                          {Object.keys(areaUnidades).map((area) => (
-                            <MenuItem key={area} value={area}>{area}</MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
-                    </Grid>
-
-                    <Grid item xs={12} sm={6} md={3}>
-                      <FormControl fullWidth>
-                        <InputLabel>Subárea</InputLabel>
-                        <Select
-                          value={registro.unidad}
-                          onChange={(e) => handleRegistroChange(index, 'unidad', e.target.value)}
-                          label="Subárea"
-                          disabled={!registro.area}
-                        >
-                          {registro.area && areaUnidades[registro.area]?.map((unidad) => (
-                            <MenuItem key={unidad} value={unidad}>{unidad}</MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
-                    </Grid>
-
-                    <Grid item xs={12} sm={6} md={3}>
-                      <TextField
-                        fullWidth
-                        label="Receptor"
-                        value={registro.receptor}
-                        onChange={(e) => handleRegistroChange(index, 'receptor', e.target.value)}
-                        InputProps={{
-                          endAdornment: (
-                            <InputAdornment position="end">
-                              <IconButton
-                                onClick={() => {
-                                  navigator.clipboard.writeText(registro.receptor);
-                                }}
-                              >
-                                <ContentCopyIcon />
-                              </IconButton>
-                            </InputAdornment>
-                          )
-                        }}
-                      />
-                    </Grid>
-
-                    <Grid item xs={12} sm={6} md={4}>
-                      <TextField
-                        fullWidth
-                        label="Observaciones"
-                        value={registro.observaciones}
-                        onChange={(e) => handleRegistroChange(index, 'observaciones', e.target.value)}
-                      />
-                    </Grid>
-
-                    <Grid item xs={12} sm={2}>
-                      <Button
-                        variant="outlined"
-                        color="error"
-                        onClick={() => removeRegistro(index)}
-                        disabled={registros.length === 1}
-                      >
-                        Eliminar
-                      </Button>
-                    </Grid>
-                  </Grid>
-                ))}
               </>
             )}
           </Grid>
@@ -478,5 +560,7 @@ const CargaMasiva = ({ open, onClose, areaUnidades }) => {
     </>
   );
 };
+
+
 
 export default CargaMasiva;

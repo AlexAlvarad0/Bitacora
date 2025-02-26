@@ -15,7 +15,8 @@ import {
   FormControlLabel,
   Radio,
   Alert,
-  Paper
+  Paper,
+  IconButton
 } from '@mui/material';
 import LoadingDots from './Loading';
 import { Autocomplete } from '@mui/material';
@@ -26,6 +27,9 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import '../styles/btn.css';
 import Layout from './Layout';
 import Snackbar from '@mui/material/Snackbar';
+import { autocorrectText } from '../utils/autocorrect';
+import ClearIcon from '@mui/icons-material/Clear';
+import Chip from '@mui/material/Chip';
 
 const Formulario = () => {
   const [skuData, setSkuData] = useState([]); // Mantener los datos completos
@@ -51,6 +55,10 @@ const Formulario = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [openCargaMasiva, setOpenCargaMasiva] = useState(false);
   const [popupMessage, setPopupMessage] = useState({ open: false, message: '', type: 'success' });
+  const [lastValue, setLastValue] = useState({});
+  const [correctionTimeouts, setCorrectionTimeouts] = useState({});
+  const [topIndicators, setTopIndicators] = useState([]);
+
   useEffect(() => {
     const loadSkuData = async () => {
       try {
@@ -75,8 +83,53 @@ const Formulario = () => {
     loadSkuData();
   }, []);
 
+  useEffect(() => {
+    const loadTopIndicators = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+        const response = await axios.get('http://127.0.0.1:8000/api/bitacora/', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if(response.data.top_indicadores){
+          setTopIndicators(response.data.top_indicadores.slice(0, 4));
+        }
+      } catch (error) {
+        console.error('Error cargando indicadores principales.', error);
+      }
+    };
+    loadTopIndicators();
+  }, []);
+
   const handleFieldChange = (field, value) => {
-    setFormData({ ...formData, [field]: value });
+    if (['indicador', 'receptor', 'observaciones'].includes(field)) {
+      // Cancelar timeout previo
+      if (correctionTimeouts[field]) {
+        clearTimeout(correctionTimeouts[field]);
+      }
+
+      // Actualizar el valor inmediatamente
+      setFormData(prev => ({ ...prev, [field]: value }));
+
+      // Si se está borrando, no hacer corrección
+      if (value.length < (formData[field] || '').length) {
+        return;
+      }
+
+      // Crear nuevo timeout para corrección
+      const timeoutId = setTimeout(() => {
+        if (value.endsWith(' ') || value.length > 0) {
+          const correctedText = autocorrectText(value, field);
+          if (correctedText !== value) {
+            setFormData(prev => ({ ...prev, [field]: correctedText }));
+          }
+        }
+      }, value.endsWith(' ') ? 200 : 800); // Reducido de 500/2000 a 200/800 ms
+
+      setCorrectionTimeouts(prev => ({ ...prev, [field]: timeoutId }));
+    } else {
+      setFormData(prev => ({ ...prev, [field]: value }));
+    }
   };
 
   const handleValorChange = (value) => {
@@ -127,7 +180,11 @@ const Formulario = () => {
     ];
     for (const field of requiredFields) {
       if (!formData[field]) {
-        setErrorMessage(`Complete el campo: ${field}`);
+        setPopupMessage({
+          open: true,
+          message: 'Error al hacer el registro, complete los campos obligatorios.',
+          type: 'error'
+        });
         return false;
       }
     }
@@ -187,7 +244,7 @@ const Formulario = () => {
       console.error('Error enviando formulario', error);
       setPopupMessage({
         open: true,
-        message: 'El registro no fue enviado, asegúrese que la bitácora no esté abierta',
+        message: 'El registro no fue enviado, asegúrese que la bitácora no esté abierta.',
         type: 'error'
       });
       if (error.response?.status === 401) {
@@ -197,6 +254,15 @@ const Formulario = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleClearField = (field) => {
+    setFormData(prev => ({ ...prev, [field]: '' }));
+  };
+
+  // Agregar función para actualizar "indicador" desde chip sin autocorrector
+  const handleIndicadorChipClick = (value) => {
+    setFormData(prev => ({ ...prev, indicador: value }));
   };
 
   return (
@@ -272,7 +338,7 @@ const Formulario = () => {
             </Grid>
 
             {/* Fila 2 */}
-            <Grid item xs={12} sm={4}>
+            <Grid item xs={12} sm={4}mt={-3}>
               <FormControl fullWidth>
                 <InputLabel>Canal de Comunicación</InputLabel>
                 <Select
@@ -304,7 +370,7 @@ const Formulario = () => {
                 </Select>
               </FormControl>
             </Grid>
-            <Grid item xs={12} sm={4}>
+            <Grid item xs={12} sm={4}mt={-3}>
               <FormControl fullWidth>
                 <InputLabel>Área</InputLabel>
                 <Select
@@ -337,7 +403,7 @@ const Formulario = () => {
                 </Select>
               </FormControl>
             </Grid>
-            <Grid item xs={12} sm={4}>
+            <Grid item xs={12} sm={4}mt={-3}>
               <FormControl fullWidth disabled={!formData.area}>
                 <InputLabel>Subárea</InputLabel>
                 <Select
@@ -377,6 +443,17 @@ const Formulario = () => {
                 label="Indicador"
                 value={formData.indicador}
                 onChange={(e) => handleFieldChange('indicador', e.target.value)}
+                InputProps={{
+                  endAdornment: formData.indicador && (
+                    <IconButton
+                      aria-label="clear input"
+                      onClick={() => handleClearField('indicador')}
+                      edge="end"
+                    >
+                      <ClearIcon />
+                    </IconButton>
+                  ),
+                }}
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     '& fieldset': {
@@ -394,6 +471,25 @@ const Formulario = () => {
                   }
                 }}
               />
+              {/* Agregar etiquetas con los 5 indicadores principales */}
+              {topIndicators.length > 0 && (
+                <Box sx={{ mt: 0.5 }}>
+                  {topIndicators.map((item, idx) => (
+                    <Chip 
+                      key={idx}
+                      label={item.indicador}
+                      onClick={() => handleIndicadorChipClick(item.indicador)}
+                      sx={{ 
+                        cursor: 'pointer', 
+                        mr: 0.5,
+                        fontSize: '0.8rem',      // Ajustar tamaño de texto
+                        padding: '0px 1px',      // Ajustar padding
+                        height: '20px'           // Ajustar altura
+                      }}
+                    />
+                  ))}
+                </Box>
+              )}
             </Grid>
             <Grid item xs={12} sm={4}>
               <TextField
@@ -461,7 +557,7 @@ const Formulario = () => {
             </Grid>
 
             {/* Fila 4 */}
-            <Grid item xs={12} sm={4}>
+            <Grid item xs={12} sm={4}mt={-3}>
               <Typography variant="subtitle1" color=' #003087'>Respuesta</Typography>
               <RadioGroup
                 row
@@ -473,7 +569,7 @@ const Formulario = () => {
                 ))}
               </RadioGroup>
             </Grid>
-            <Grid item xs={12} sm={4}>
+            <Grid item xs={12} sm={4}mt={-3}>
               <FormControl fullWidth>
                 
                 <Autocomplete
@@ -515,7 +611,7 @@ const Formulario = () => {
                 />
               </FormControl>
             </Grid>
-            <Grid item xs={12} sm={4}>
+            <Grid item xs={12} sm={4}mt={-3}>
               <TextField
                 fullWidth
                 label="Receptor"
@@ -537,11 +633,22 @@ const Formulario = () => {
                   }
                 }}
                 onChange={(e) => handleFieldChange('receptor', e.target.value)}
+                InputProps={{
+                  endAdornment: formData.receptor && (
+                    <IconButton
+                      aria-label="clear input"
+                      onClick={() => handleClearField('receptor')}
+                      edge="end"
+                    >
+                      <ClearIcon />
+                    </IconButton>
+                  ),
+                }}
               />
             </Grid>
 
             {/* Fila 5 */}
-            <Grid item xs={12}>
+            <Grid item xs={12}mt={-3}>
               <TextField
                 fullWidth
                 label="Observaciones"

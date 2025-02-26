@@ -10,6 +10,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { Snackbar, Alert } from '@mui/material';
+import ClickSpark from '../components/ClickSpark';
 
 const Login = () => {
   const [username, setUsername] = useState('');
@@ -46,6 +47,7 @@ const Login = () => {
 
   return (
     <div className="login-container">
+      <ClickSpark sparkColor='#fff' sparkSize={10} sparkRadius={15} sparkCount={8} duration={400} />
       <div className="login-card">
         <div className="login-form">
           <div className="title-section">

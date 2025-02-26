@@ -42,7 +42,7 @@ class SKULoadView(APIView):
             archivo_excel = 'SKU.xlsx'
 
             ctx = ClientContext(sharepoint_url).with_credentials(
-                UserCredential('user', 'password')
+                UserCredential('aialvarado@agrosuper.com', 'Produccion2025.')
             )
 
             # Leer el archivo existente desde SharePoint
@@ -76,7 +76,7 @@ class FormularioView(APIView):
             archivo_excel = 'Bitácora TC.xlsx'
 
             ctx = ClientContext(sharepoint_url).with_credentials(
-                UserCredential('user', 'password')
+                UserCredential('aialvarado@agrosuper.com', 'Produccion2025.')
             )
 
             # Leer el archivo existente desde SharePoint
@@ -130,7 +130,7 @@ class FormularioView(APIView):
             # Aplicar formatos (el código existente de formato)
             desviacion_colors = {
                 'D1': 'C6EFCE',
-                'D2': 'FFFF00',
+                'D2': 'FDE208',
                 'D3': 'FFA500',
                 'D4': 'FF0000'
             }
@@ -199,7 +199,7 @@ class BitacoraDataView(APIView):
             folder_path = "/sites/PanelPlantaRosario/Documentos compartidos/1.- Torre de Control/1.- Gestión TC/2- Registro Bitácora TC (interfaz web)"
             archivo_excel = 'Bitácora TC.xlsx'
             ctx = ClientContext(sharepoint_url).with_credentials(
-                UserCredential('user', 'password')
+                UserCredential('aialvarado@agrosuper.com', 'Produccion2025.')
             )
             # Leer el archivo existente desde SharePoint
             response = ctx.web.get_file_by_server_relative_url(folder_path + "/" + archivo_excel).execute_query()
@@ -211,7 +211,7 @@ class BitacoraDataView(APIView):
             df = pd.read_excel(file_content)
             
             # Validar que existan las columnas requeridas
-            required_columns = ['Fecha y Hora', 'Desviación', 'Área']
+            required_columns = ['Fecha y Hora', 'Desviación', 'Área', 'Indicador']
             missing_columns = [col for col in required_columns if col not in df.columns]
             if missing_columns:
                 return Response(
@@ -219,41 +219,58 @@ class BitacoraDataView(APIView):
                     status=status.HTTP_400_BAD_REQUEST
                 )
             
-            # Convertir columna de fecha al formato específico
+            # Formatear y limpiar datos
             df['Fecha y Hora'] = pd.to_datetime(
                 df['Fecha y Hora'], 
                 format='%d-%m-%Y %H:%M:%S', 
                 errors='coerce'
             ).dt.strftime('%d-%m-%Y %H:%M:%S')
             
-            # Eliminar filas con fechas inválidas
-            df = df.dropna(subset=['Fecha y Hora'])
-            
-            # Normalizar valores de desviación (asegurar que sean D1, D2, D3, D4)
-            valid_desviations = ['D1', 'D2', 'D3', 'D4']
-            df['Desviación'] = df['Desviación'].apply(
-                lambda x: x.strip() if isinstance(x, str) and x.strip() in valid_desviations else None
-            )
-            
-            # Limpiar datos y manejar valores NaN
+            # Limpiar y normalizar los datos
             df = df.fillna('')
-        
-            # Convertir DataFrame a lista de diccionarios
-            data = df.to_dict(orient='records')
-            
-            # Agregar estadísticas básicas
-            stats = {
-                'total_registros': len(data),
-                'total_desviaciones': len([r for r in data if r['Desviación'] in valid_desviations]),
-                'conteo_por_desviacion': {
-                    desv: len([r for r in data if r['Desviación'] == desv])
-                    for desv in valid_desviations
+            df['Indicador'] = df['Indicador'].astype(str).str.strip()
+            df['Área'] = df['Área'].astype(str).str.strip()
+            df['Desviación'] = df['Desviación'].astype(str).str.strip()
+
+            # Preparar estadísticas adicionales
+            indicadores_stats = []
+            for indicador in df['Indicador'].unique():
+                if not indicador:  # Skip empty indicators
+                    continue
+                    
+                mask = df['Indicador'] == indicador
+                areas = df[mask]['Área'].unique()
+                total = mask.sum()
+                
+                stats = {
+                    'indicador': indicador,
+                    'areas': ', '.join(filter(None, areas)),  # Filter out empty areas
+                    'total': int(total),
+                    'D1': int(df[mask & (df['Desviación'] == 'D1')].shape[0]),
+                    'D2': int(df[mask & (df['Desviación'] == 'D2')].shape[0]),
+                    'D3': int(df[mask & (df['Desviación'] == 'D3')].shape[0]),
+                    'D4': int(df[mask & (df['Desviación'] == 'D4')].shape[0])
                 }
-            }
+                indicadores_stats.append(stats)
+            
+            # Ordenar por total y tomar los top 10
+            indicadores_stats.sort(key=lambda x: x['total'], reverse=True)
+            top_indicadores = indicadores_stats[:10]
+            
+            # Convertir DataFrame a lista de diccionarios para los datos principales
+            data = df.to_dict(orient='records')
             
             return Response({
                 'data': data,
-                'stats': stats
+                'stats': {
+                    'total_registros': len(data),
+                    'total_desviaciones': len(df[df['Desviación'].isin(['D1', 'D2', 'D3', 'D4'])]),
+                    'conteo_por_desviacion': {
+                        desv: int(df['Desviación'].eq(desv).sum())
+                        for desv in ['D1', 'D2', 'D3', 'D4']
+                    }
+                },
+                'top_indicadores': top_indicadores
             }, status=status.HTTP_200_OK)
             
         except Exception as e:
@@ -273,7 +290,7 @@ class CargaMasivaView(APIView):
             archivo_excel = 'Bitácora TC.xlsx'
 
             ctx = ClientContext(sharepoint_url).with_credentials(
-                UserCredential('user', 'password')
+                UserCredential('aialvarado@agrosuper.com', 'Produccion2025.')
             )
 
             # Leer el archivo existente
@@ -303,9 +320,9 @@ class CargaMasivaView(APIView):
                     "Valor %": registro['valor'],
                     "Desviación": registro['desviacion'],
                     "Hora de Desviación": registro['hora_desviacion'],
-                    "Respuesta": "No",
+                    "Respuesta": registro['respuesta'],
                     "SKU": registro['sku'],
-                    "Producto": f'=VLOOKUP({registro["sku"]},SKU!A:B,2,FALSE)',
+                     "Producto": registro['producto'].title() if registro['producto'] else f'=VLOOKUP({registro["sku"]},SKU!A:B,2,FALSE)',
                     "Receptor": registro['receptor'],
                     "Observaciones": registro['observaciones']
                 }
@@ -327,7 +344,7 @@ class CargaMasivaView(APIView):
 
             desviacion_colors = {
                 'D1': 'C6EFCE',
-                'D2': 'FFFF00',
+                'D2': 'FDE208',
                 'D3': 'FFA500',
                 'D4': 'FF0000'
             }
@@ -387,7 +404,7 @@ class ExcelDataView(APIView):
 
             # Initialize SharePoint context
             ctx = ClientContext(sharepoint_url).with_credentials(
-                UserCredential('user', 'password')
+                UserCredential('aialvarado@agrosuper.com', 'Produccion2025.')
             )
 
             # Get file from SharePoint

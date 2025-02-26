@@ -25,6 +25,7 @@ const TablaRegistros = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [pageSize, setPageSize] = useState(10);
+  const [pageIndex, setPageIndex] = useState(0); // Agregar este estado
 
   const columns = [
     {
@@ -72,13 +73,13 @@ const TablaRegistros = () => {
           style={{
             backgroundColor: 
               getValue() === 'D1' ? '#C6EFCE' :
-              getValue() === 'D2' ? '#FFFF00' :
+              getValue() === 'D2' ? '#FDE208' :
               getValue() === 'D3' ? '#FFA500' :
               getValue() === 'D4' ? '#FF0000' : 
               'transparent',
             padding: '6px 16px',
             borderRadius: '16px',
-            color: getValue() === 'D1' || getValue() === 'D2' ? 'black' : 'white',
+            color: getValue() === 'D1' || getValue() === 'D2' ? 'black' : 'black',
             width: '80%',
             textAlign: 'center'
           }}
@@ -120,9 +121,19 @@ const TablaRegistros = () => {
     getPaginationRowModel: getPaginationRowModel(),
     state: {
       pagination: {
-        pageSize: pageSize,
-        pageIndex: 0,
+        pageSize,
+        pageIndex,
       },
+    },
+    onPaginationChange: (updater) => {
+      if (typeof updater === 'function') {
+        const newState = updater({ pageSize, pageIndex });
+        setPageSize(newState.pageSize);
+        setPageIndex(newState.pageIndex);
+      } else {
+        setPageSize(updater.pageSize);
+        setPageIndex(updater.pageIndex);
+      }
     },
   });
 
@@ -276,11 +287,12 @@ const TablaRegistros = () => {
           </Typography>
           <Pagination
             count={table.getPageCount()}
-            page={table.getState().pagination.pageIndex + 1}
+            page={pageIndex + 1}
             onChange={(event, newPage) => {
-              table.setPageIndex(newPage - 1);
+              setPageIndex(newPage - 1);
             }}
             color="primary"
+            shape="rounded"
           />
         </Stack>
       </Paper>

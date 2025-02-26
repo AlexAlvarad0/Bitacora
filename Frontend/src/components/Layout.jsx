@@ -4,20 +4,18 @@ import Header from './Header';
 
 const Layout = ({ children }) => {
   return (
-    <>
+    <Box sx={{ position: 'relative' }}>
       <Header />
       <Box sx={{ 
         display: 'flex',
         minHeight: '100vh',
-        backgroundColor: '#f5f5f5'
+        backgroundColor: (theme) => theme.palette.background.default
       }}>
-        {/* Espacio para el sidebar */}
-        <Box sx={{ width: '80px', flexShrink: 0 }} />
+        <Box sx={{ width: '0px', flexShrink: 0 }} />
         
-        {/* Contenido principal */}
         <Box sx={{ 
           flexGrow: 1, 
-          pl: { sm: '170px' },
+          pl: { sm: '0px' },
           transition: 'padding 0.3s',
           pt: 4,
           pb: 4
@@ -28,7 +26,7 @@ const Layout = ({ children }) => {
               mb: 4,
               '& .MuiPaper-root': {
                 borderRadius: 2,
-                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
                 p: 3
               }
             }}
@@ -37,7 +35,7 @@ const Layout = ({ children }) => {
           </Container>
         </Box>
       </Box>
-    </>
+    </Box>
   );
 };
 

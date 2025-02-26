@@ -69,12 +69,12 @@ const Header = () => {
         height: '100vh',
         position: 'fixed',
         zIndex: 1000,
-        padding: '10px 0',
+        padding: '0', // Removido el padding vertical
         boxSizing: 'border-box'
       }}
     >
       <Sidebar 
-        width="250px" 
+        width="200px" 
         collapsedWidth="80px"
         backgroundColor="#f8f9fa"
         rootStyles={{
@@ -82,22 +82,22 @@ const Header = () => {
           border: 'none',
           boxShadow: '0 0 15px rgba(0, 0, 0, 0.2)',
           display: 'flex',
-          flexDirection: 'column'
+          flexDirection: 'column',
+          overflow: 'hidden' // Evita el scroll en el sidebar
         }}
       >
         {/* Header Section - Fixed height */}
-        <Box 
-          sx={{ 
-            padding: collapsed ? '20px' : '20px', 
-            textAlign: 'center', 
-            backgroundColor: '#003087',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            height: collapsed ? '80px' : '80px',
-            boxSizing: 'border-box'
-          }}
-        >
+        <Box sx={{ 
+          padding: collapsed ? '20px' : '20px', 
+          textAlign: 'center', 
+          backgroundColor: '#003087',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          height: '100px',
+          boxSizing: 'border-box',
+          position: 'relative'
+        }}>
           <img 
             src={logo} 
             alt="Logo" 
@@ -127,7 +127,7 @@ const Header = () => {
         <Box sx={{ 
           display: 'flex', 
           flexDirection: 'column',
-          height: 'calc(100% - 80px)', // Subtract header height
+          height: 'calc(100% - 100px)', // Resta exactamente la altura del header
           position: 'relative'
         }}>
           
@@ -135,7 +135,12 @@ const Header = () => {
           <Box sx={{ 
             flex: 1,
             overflowY: 'auto',
-            marginTop: collapsed ? '0px' : 0
+            marginTop: 0,
+            '&::-webkit-scrollbar': {
+              display: 'none' // Oculta la barra de scroll en navegadores webkit
+            },
+            msOverflowStyle: 'none', // Oculta la barra de scroll en IE
+            scrollbarWidth: 'none' // Oculta la barra de scroll en Firefox
           }}>
             <Menu 
               menuItemStyles={{
@@ -180,8 +185,6 @@ const Header = () => {
             sx={{
               padding: '10px',
               borderTop: '1px solid rgba(0, 0, 0, 0.1)',
-              position: 'sticky',
-              bottom: 0,
               backgroundColor: '#f8f9fa',
               width: '100%',
               boxSizing: 'border-box'
