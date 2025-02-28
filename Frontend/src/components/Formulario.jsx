@@ -95,7 +95,7 @@ const Formulario = () => {
           setTopIndicators(response.data.top_indicadores.slice(0, 4));
         }
       } catch (error) {
-        console.error('Error cargando indicadores principales.', error);
+        console.error('Error cargando indicadores principales', error);
       }
     };
     loadTopIndicators();
@@ -147,17 +147,17 @@ const Formulario = () => {
     "Calidad": ["Aseguramiento de Calidad"],
     "Congelado": ["Cambio de Embalaje", "Carton Freezer", "Congelado", "Paletizado"],
     "Control de Producción": ["Control de Producción", "Informática", "Romana de Camiones"],
-    "Cortes Especiales": ["Sala de Laminado", "Cortes Especiales", "Ecualizado", 
+    "Cortes Especiales": ["Sala de Laminado","Calibrado Fresco", "Cortes Especiales", "Ecualizado", 
                          "Marinado", "Pimentado", "Porcionado"],
     "Despacho": ["Despacho"],
-    "Desposte": ["Calibrado Fresco", "Desposte", "Rectificado"],
-    "Faena": ["Butina", "Corrales", "Faena", "Lavado de Camiones"],
+    "Desposte": ["Calibrado", "Desposte", "Rectificado"],
+    "Faena": ["Butina", "Corrales", "Faena", "Lavado de Camiones", "Sub Productos"],
     "General" : ["Estatus Planta RO", "Planta Rosario", "Resumen Semanal", "Skyview"],
     "Mantenimiento": ["Mantenimiento"],
     "Personas": ["Personas", "SSO"],
     "Producción": ["Cumplimiento de Producción"],
     "Producción Animal": ["Producción Animal", "Torre Producción Animal"],
-    "Servicios": ["Servicios"],
+    "Servicios": ["Armado de Cajas","Calderas", "CIL","Riles", "SADEMA","Servicios"],
     "Torre de Control": ["Torre de Control"]
   };
 
@@ -180,11 +180,7 @@ const Formulario = () => {
     ];
     for (const field of requiredFields) {
       if (!formData[field]) {
-        setPopupMessage({
-          open: true,
-          message: 'Error al hacer el registro, complete los campos obligatorios.',
-          type: 'error'
-        });
+        setErrorMessage(`Complete el campo: ${field}`);
         return false;
       }
     }
@@ -244,7 +240,7 @@ const Formulario = () => {
       console.error('Error enviando formulario', error);
       setPopupMessage({
         open: true,
-        message: 'El registro no fue enviado, asegúrese que la bitácora no esté abierta.',
+        message: 'El registro no fue enviado, asegúrese que la bitácora no esté abierta',
         type: 'error'
       });
       if (error.response?.status === 401) {

@@ -37,9 +37,9 @@ const CargaMasiva = ({ open, onClose }) => {
     observaciones: ''   // New common field
   });
   const areaUnidades = {
-    "Desposte": ["Calibrado Fresco", "Desposte", "Rectificado"],
-    "Faena": ["Butina", "Corrales", "Faena", "Lavado de Camiones"],
-    "Cortes Especiales": ["Sala de Laminado", "Cortes Especiales", "Ecualizado", 
+    "Desposte": ["Calibrado", "Desposte", "Rectificado"],
+    "Faena": ["Butina", "Corrales", "Faena", "Lavado de Camiones", "Sub Productos"],
+    "Cortes Especiales": ["Sala de Laminado","Calibrado Fresco", "Cortes Especiales", "Ecualizado", 
                          "Marinado", "Pimentado", "Porcionado"]
   };
   const [rawSkus, setRawSkus] = useState('');
@@ -94,18 +94,41 @@ const CargaMasiva = ({ open, onClose }) => {
     setRegistros(newRegistros);
   };
 
+  const cleanSpaces = (text) => {
+    return text.replace(/\s+/g, ' ').trim();
+  };
+
+  const normalizeValue = (value) => {
+    // Eliminar el espacio entre el número y el símbolo %
+    const cleanedValue = value.replace(/\s*%\s*/, '%');
+    // Normalizar el valor para que tenga el formato correcto
+    return cleanedValue.replace(',', '.').replace(/[^0-9.]/g, '') + '%';
+  };
+
+  const normalizeTime = (time) => {
+    // Normalizar la hora para que tenga el formato correcto
+    const [hours, minutes] = time.split(':');
+    return `${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}`;
+  };
+
+  const normalizeExcelData = (text) => {
+    // Detectar y normalizar formatos personalizados de Excel
+    return text.replace(/[\u200B-\u200D\uFEFF]/g, ''); // Eliminar caracteres invisibles
+  };
+
   const parseData = (skusText, valuesText, indicador) => {
     try {
       const items = skusText.split('\n').filter(line => line.trim() !== '');
       const valuesAndDeviations = valuesText
         .split('\n')
-        .filter(line => /^\d+[.,]\d+%?\s+D[1-4]\s+\d{2}:\d{2}$/i.test(line.trim()))
+        .filter(line => /^\d+[.,]\d+%?\s+D[1-4]\s+\d{1,2}:\d{2}$/i.test(cleanSpaces(normalizeExcelData(line.trim()))))
         .map(line => {
-          const [value, deviation, hora] = line.trim().split(/\s+/);
+          const cleanedLine = cleanSpaces(normalizeExcelData(line.trim()));
+          const [value, deviation, hora] = cleanedLine.split(' ');
           return {
-            valor: value,
+            valor: normalizeValue(value),
             desviacion: deviation.toUpperCase(),
-            hora_desviacion: hora
+            hora_desviacion: normalizeTime(hora)
           };
         });
 
@@ -183,6 +206,13 @@ const CargaMasiva = ({ open, onClose }) => {
         localStorage.removeItem('token');
       }
     }
+  };
+
+  const cleanValueFormat = (text) => {
+    // Reemplazar los espacios entre números y % en cada línea
+    return text.split('\n').map(line => {
+      return line.replace(/(\d+,\d+)\s+%/, '$1%');
+    }).join('\n');
   };
 
   return (
@@ -479,6 +509,8 @@ ${baseData.indicador === 'Productos No Objetivos' || baseData.indicador === 'Pro
               <Typography variant="subtitle1" color=' #003087' gutterBottom>Valores, Desviación y Hora</Typography>
               <TextField
                 fullWidth
+                multiline
+                rows={7}
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     '& fieldset': {
@@ -495,17 +527,18 @@ ${baseData.indicador === 'Productos No Objetivos' || baseData.indicador === 'Pro
                     padding: '10px',
                   }
                 }}
-                multiline
-                rows={7}
                 value={rawValues}
                 onChange={(e) => {
-                  setRawValues(e.target.value);
-                  parseData(rawSkus, e.target.value, baseData.indicador);
+                  // Limpiar el formato al pegar/escribir
+                  const cleanedValue = cleanValueFormat(e.target.value);
+                  setRawValues(cleanedValue);
+                  parseData(rawSkus, cleanedValue, baseData.indicador);
                 }}
                 placeholder={`Ejemplo:
 2,23% D3 12:30
 1,62% D3 13:45
 2,50% D3 14:00`}
+                // ...resto de las propiedades...
               />
             </Grid>
 

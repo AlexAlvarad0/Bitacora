@@ -323,7 +323,7 @@ class CargaMasivaView(APIView):
                     "Respuesta": registro['respuesta'],
                     "SKU": registro['sku'],
                      "Producto": registro['producto'].title() if registro['producto'] else f'=VLOOKUP({registro["sku"]},SKU!A:B,2,FALSE)',
-                    "Receptor": registro['receptor'],
+                    "Receptor": registro['receptor'].title(),
                     "Observaciones": registro['observaciones']
                 }
                 nuevos_registros.append(nuevo_registro)
